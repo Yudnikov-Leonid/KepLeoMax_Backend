@@ -16,10 +16,18 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env server.js",
-    "dev": "node --watch --env-file=.env server.js"
+    "dev": "node --watch --env-file=.env server.js",
+    "test": "jest"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/node": "^7.28.0",
+    "@babel/preset-env": "^7.28.5",
+    "@types/jest": "^30.0.0",
+    "ject": "^1.1.0"
   }
 }
