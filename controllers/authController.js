@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import { users } from '../db/users.js';
 import jwt from 'jsonwebtoken';
+import pool from '../db.js';
 
 const accessTokenExpireTime = '60s'
 const refreshTokenExpireTime = '1d'
@@ -15,17 +15,15 @@ export const createNewUser = async (req, res) => {
     }
 
     // check duplicates
-    const duplicate = users.find(person => person.email === email);
-    if (duplicate) {
+    const duplicates = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (foundUser.rows.length !== 0) {
         return res.status(409).json({ message: `User with email ${email} is alredy exists` });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = {email: email, password: hashedPassword};
-        users.push(newUser);
+        await pool.query('INSERT INTO users (email, password, refreshToken) VALUES ($1, $2, $3)', [email, hashedPassword, null])
 
-        //console.log(`New users list: ${users.map(person => `${person.email} ${person.password}`)}`);
         res.status(201).json({success: `New user ${email} created`});
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -38,12 +36,11 @@ export const login = async (req, res) => {
         return res.status(400).json({message: 'Email and password are required'});
     }
 
-    const foundUserIndex = users.findIndex(person => person.email === email);
-    if (foundUserIndex === -1) {
+    let foundUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (foundUser.rows.length === 0) {
         return res.status(401).json({ message: `User with email ${email} was not found` });
     }
-
-    const foundUser = users[foundUserIndex]
+    foundUser = foundUser.rows[0];
 
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
@@ -58,28 +55,23 @@ export const login = async (req, res) => {
             { expiresIn: refreshTokenExpireTime }
         );
         
-        users[foundUserIndex].refreshToken = refreshToken
+        await pool.query('UPDATE users SET refreshToken = $1 WHERE id = $2', [refreshToken, foundUser.id]);
         
-        //res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: refreshTokenMaxAge})
         res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
     } else {
         res.status(401).json({message: 'Password is incorrect'});
     }
 }
 
-export const refreshToken = (req, res) => {
+export const refreshToken = async (req, res) => {
     const refreshToken = req.body?.refreshToken;
     if (!refreshToken) return res.sendStatus(401);
 
-    // const cookies = req.cookies;
-    // if (!cookies?.jwt) return res.sendStatus(401);
-    // const refreshToken = cookies.jwt;
-
-    const foundUserIndex = users.findIndex(person => person.refreshToken === refreshToken);
-    if (foundUserIndex === -1) {
+    let foundUser = await pool.query('SELECT * FROM users WHERE refreshToken = $1', [refreshToken]);
+    if (foundUser.rows.length === 0) {
         return res.sendStatus(403);
     }
-    const foundUser = users[foundUserIndex];
+    foundUser = foundUser.rows[0];
 
     jwt.verify(
         refreshToken,
@@ -96,23 +88,18 @@ export const refreshToken = (req, res) => {
     );
 }
 
-export const logout =  (req, res) => {
+export const logout = async (req, res) => {
     // on a client also delete the accessToken
 
-    const refreshToken = req.body?.get('refreshToken');
+    const refreshToken = req.body?.refreshToken;
     if (!refreshToken) return res.sendStatus(401);
 
-    // const cookies = req.cookies;
-    // if (!cookies?.jwt) return res.sendStatus(204);
-    // const refreshToken = cookies.jwt;
-
-    const foundUserIndex = users.findIndex(person => person.refreshToken === refreshToken);
-    if (foundUserIndex === -1) {
-        //res.clearCookie('jwt', {httpOnly: true, maxAge: refreshTokenMaxAge});
+    let foundUser = await pool.query('SELECT * FROM users WHERE refreshToken = $1', [refreshToken]);
+    if (foundUser.rows.length === 0) {
         return res.sendStatus(204);
     }
-    
-    users[foundUserIndex].refreshToken = undefined;
-    //res.clearCookie('jwt', {httpOnly: true, maxAge: refreshTokenMaxAge});
+    foundUser = foundUser.rows[0];
+
+    await pool.query('UPDATE users SET refreshToken = NULL WHERE id = $1', [foundUser.id])
     res.sendStatus(204);
 }

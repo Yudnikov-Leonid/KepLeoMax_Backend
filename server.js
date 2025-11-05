@@ -5,6 +5,7 @@ import errorHandler from './middleware/error.js';
 import notFound from './middleware/notFound.js';
 import verifyJWT from './middleware/verifyJWT.js';
 import cookieParser from 'cookie-parser';
+import pool from './db.js';
 
 const PORT = process.env.PORT;
 
@@ -23,6 +24,12 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/user', authRouter);
+
+app.get('/setup', async (res, req) => {
+    await pool.query('CREATE DATABASE KLM_db;');
+    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refreshToken VARCHAR(1000) NULL)');
+    res.json({message: 'table created'});
+});
 
 app.use(verifyJWT);
 app.use('/api', router);

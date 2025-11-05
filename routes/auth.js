@@ -5,6 +5,6 @@ import { createNewUser, login, logout, refreshToken } from '../controllers/authC
 router.post('/register', createNewUser);
 router.post('/login', login);
 router.post('/refresh', refreshToken);
-router.get('/logout', logout);
+router.post('/logout', logout);
 
 export default router;

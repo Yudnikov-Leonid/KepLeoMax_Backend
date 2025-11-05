@@ -1,0 +1,11 @@
+services:
+  KLM_db: 
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: KLM_3000
+      POSTGRES_USER: KLMU
+      POSTGRES_DB: KLM_db
+  app:
+    image: kepleomax-node-app
+    ports: 
+      - 13000:3000
