@@ -2,7 +2,10 @@ import bcrypt from 'bcrypt';
 import { users } from '../db/users.js';
 import jwt from 'jsonwebtoken';
 
-// TODO MOVE MAXAGE NUMBER IN .ENV
+const accessTokenExpireTime = '60s'
+const refreshTokenExpireTime = '1d'
+const refreshTokenMaxAge = 24 * 60 * 60 * 1000
+
 // ADD FLAG secure: true when sending cookies in production
 
 export const createNewUser = async (req, res) => {
@@ -44,33 +47,33 @@ export const login = async (req, res) => {
 
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
-        // create JWTs
         const accessToken = jwt.sign(
             { "email": foundUser.email },
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME }
+            { expiresIn: accessTokenExpireTime }
         );
         const refreshToken = jwt.sign(
             { "email": foundUser.email },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME }
+            { expiresIn: refreshTokenExpireTime }
         );
         
-        users.splice(foundUserIndex, 1)
-        foundUser.refreshToken = refreshToken
-        users.push(foundUser)
+        users[foundUserIndex].refreshToken = refreshToken
         
-        res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: 24 * 60 * 60 * 1000})
-        res.status(200).json({ accessToken });
+        //res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: refreshTokenMaxAge})
+        res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
     } else {
         res.status(401).json({message: 'Password is incorrect'});
     }
 }
 
 export const refreshToken = (req, res) => {
-    const cookies = req.cookies;
-    if (!cookies?.jwt) return res.sendStatus(401);
-    const refreshToken = cookies.jwt;
+    const refreshToken = req.body?.refreshToken;
+    if (!refreshToken) return res.sendStatus(401);
+
+    // const cookies = req.cookies;
+    // if (!cookies?.jwt) return res.sendStatus(401);
+    // const refreshToken = cookies.jwt;
 
     const foundUserIndex = users.findIndex(person => person.refreshToken === refreshToken);
     if (foundUserIndex === -1) {
@@ -86,9 +89,9 @@ export const refreshToken = (req, res) => {
             const accessToken = jwt.sign(
                 {email: decoded.email},
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME }
+                { expiresIn: accessTokenExpireTime }
             );
-            res.json({accessToken});
+            res.status(200).json({accessToken: accessToken});
         }
     );
 }
@@ -96,17 +99,20 @@ export const refreshToken = (req, res) => {
 export const logout =  (req, res) => {
     // on a client also delete the accessToken
 
-    const cookies = req.cookies;
-    if (!cookies?.jwt) return res.sendStatus(204);
-    const refreshToken = cookies.jwt;
+    const refreshToken = req.body?.get('refreshToken');
+    if (!refreshToken) return res.sendStatus(401);
+
+    // const cookies = req.cookies;
+    // if (!cookies?.jwt) return res.sendStatus(204);
+    // const refreshToken = cookies.jwt;
 
     const foundUserIndex = users.findIndex(person => person.refreshToken === refreshToken);
     if (foundUserIndex === -1) {
-        res.clearCookie('jwt', {httpOnly: true, maxAge: 24 * 60 * 60 * 1000});
+        //res.clearCookie('jwt', {httpOnly: true, maxAge: refreshTokenMaxAge});
         return res.sendStatus(204);
     }
     
     users[foundUserIndex].refreshToken = undefined;
-    res.clearCookie('jwt', {httpOnly: true, maxAge: 24 * 60 * 60 * 1000});
+    //res.clearCookie('jwt', {httpOnly: true, maxAge: refreshTokenMaxAge});
     res.sendStatus(204);
 }
