@@ -4,9 +4,6 @@ import pool from '../db.js';
 
 const accessTokenExpireTime = '60s'
 const refreshTokenExpireTime = '1d'
-const refreshTokenMaxAge = 24 * 60 * 60 * 1000
-
-// ADD FLAG secure: true when sending cookies in production
 
 export const createNewUser = async (req, res) => {
     const {email, password} = req.body;
@@ -16,7 +13,7 @@ export const createNewUser = async (req, res) => {
 
     // check duplicates
     const duplicates = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (foundUser.rows.length !== 0) {
+    if (duplicates.rows.length !== 0) {
         return res.status(409).json({ message: `User with email ${email} is alredy exists` });
     }
 
@@ -55,7 +52,7 @@ export const login = async (req, res) => {
             { expiresIn: refreshTokenExpireTime }
         );
         
-        await pool.query('UPDATE users SET refreshToken = $1 WHERE id = $2', [refreshToken, foundUser.id]);
+        await pool.query('UPDATE users SET refreshToken = $1 WHERE id = $2', [refreshToken, foundUser.email]);
         
         res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
     } else {
