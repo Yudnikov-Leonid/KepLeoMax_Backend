@@ -2,6 +2,7 @@ import { createNewUser, login, refreshToken } from '../controllers/authControlle
 import { users } from '../db/users';
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
+import { checkMockResponseCalledWith, checkMockResponseSendStatusCalledWith, resetCalledTimes, setup } from './mock_helpers.js';
 
 // mocks
 jest.mock('jsonwebtoken', () => ({
@@ -32,6 +33,8 @@ const mockResponse = {
     json: jest.fn(),
 };
 
+setup(mockRequest, mockResponse);
+
 // settings functiongs
 const OLD_ENV = process.env;
 let accessTokenSecret;
@@ -39,6 +42,7 @@ let refreshTokenSecret;
 const doBeforeEach = () => {
     jest.resetModules();
     resetCalledTimes();
+    resetCalledTimesLocal();
     process.env = { ...OLD_ENV, ACCESS_TOKEN_SECRET:'access_token_super_secret', REFRESH_TOKEN_SECRET:'refresh_token_super_secret' }; // Make a copy
     users.length = 0;
     accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
@@ -201,36 +205,20 @@ describe('auth tests', () => {
     });
 })
 
-const resetCalledTimes = () => {
-    mockResponseCalledTimes = 0;
-    mockResponseSendStatusCalledTimes = 0;
+// mock helpers
+const resetCalledTimesLocal = () => {
     jwtVerifyCalledTimes = 0;
     poolQueryCalledTimes = 0;
 }
 
-// mock helpers
-let mockResponseCalledTimes = 0
-const checkMockResponseCalledWith = (statusCode, ...params) => {
-    mockResponseCalledTimes++;
-    expect(mockResponse.status).toHaveBeenLastCalledWith(statusCode);
-    expect(mockResponse.status).toHaveBeenCalledTimes(mockResponseCalledTimes);
-    expect(mockResponse.json).toHaveBeenLastCalledWith(...params);
-    expect(mockResponse.json).toHaveBeenCalledTimes(mockResponseCalledTimes);
-}
-let mockResponseSendStatusCalledTimes = 0;
-const checkMockResponseSendStatusCalledWith = (statusCode) => {
-    mockResponseSendStatusCalledTimes++;
-    expect(mockResponse.sendStatus).toHaveBeenLastCalledWith(statusCode);
-    expect(mockResponse.sendStatus).toHaveBeenCalledTimes(mockResponseSendStatusCalledTimes);
-}
 let jwtVerifyCalledTimes = 0;
-const checkJwtVerifyCalledWith = (...params) => {
+export const checkJwtVerifyCalledWith = (...params) => {
     jwtVerifyCalledTimes++;
     expect(jwt.verify).toHaveBeenLastCalledWith(...params);
     expect(jwt.verify).toHaveBeenCalledTimes(jwtVerifyCalledTimes);
 }
 let poolQueryCalledTimes = 0;
-const checkPoolQueryCalledWith = (...params) => {
+export const checkPoolQueryCalledWith = (...params) => {
     poolQueryCalledTimes++;
     expect(pool.query).toHaveBeenLastCalledWith(...params);
     expect(pool.query).toHaveBeenCalledTimes(poolQueryCalledTimes);

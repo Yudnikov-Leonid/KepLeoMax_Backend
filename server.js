@@ -27,7 +27,8 @@ app.use('/api/user', authRouter);
 
 app.get('/setup', async (res, req) => {
     await pool.query('CREATE DATABASE KLM_db;');
-    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refreshToken VARCHAR(1000) NULL)');
+    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refresh_token VARCHAR(1000) NULL)');
+    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id SERIAL, user_name VARCHAR(100), description VARCHAR(100))');
     res.json({message: 'table created'});
 });
 
