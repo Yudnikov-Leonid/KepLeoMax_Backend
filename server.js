@@ -27,10 +27,14 @@ app.use(cookieParser());
 app.use('/api/user', authRouter);
 
 app.get('/setup', async (req, res) => {
+    await pool.query('DROP DATABASE IF EXISTS KLM_db');
+    await pool.query('DROP TABLE IF EXISTS users');
+    await pool.query('DROP TABLE IF EXISTS profiles');
+
     await pool.query('CREATE DATABASE KLM_db;');
-    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refresh_token VARCHAR(1000) NULL)');
+    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refresh_tokens text[])');
     await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, username VARCHAR(100), description VARCHAR(100))');
-    res.json({message: 'table created'});
+    res.json({message: 'tables created'});
 });
 
 app.use(verifyJWT);
@@ -38,8 +42,8 @@ app.use('/api', router);
 app.use('/profile', profileRouter);
 
 // Error handlers
-// app.use(notFound);
-// app.use(errorHandler);
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)

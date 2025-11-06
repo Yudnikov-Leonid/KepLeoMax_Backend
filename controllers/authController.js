@@ -60,7 +60,7 @@ export const login = async (req, res) => {
             { expiresIn: refreshTokenExpireTime }
         );
 
-        await usersModel.updateRefreshToken(foundUser.id, refreshToken);
+        await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
                 
         res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
     } else {
@@ -74,14 +74,24 @@ export const refreshToken = async (req, res) => {
 
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
+        jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (err, decoded) => {
+            if (err) return res.sendStatus(403);
+            const hackedUser = await usersModel.getUserByEmail(decoded.UserInfo.email);
+            if (!hackedUser) return res.sendStatus(403);
+            await usersModel.resetRefreshTokensByUserId(hackedUser.id);
+        });
+
         return res.sendStatus(403);
     }
 
     jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
-        (err, decoded) => {
-            if (err || foundUser.email !== decoded.email) return res.sendStatus(403);
+        async (err, decoded) => {
+            if (err || foundUser.email !== decoded.UserInfo.email) return res.sendStatus(403);
             const accessToken = jwt.sign(
                 { "UserInfo": {
                     "id": decoded.id,
@@ -91,7 +101,20 @@ export const refreshToken = async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: accessTokenExpireTime }
             );
-            res.status(200).json({accessToken: accessToken});
+            const newRefreshToken = jwt.sign(
+                { "UserInfo": {
+                    "id": foundUser.id,
+                    "email": foundUser.email
+                }
+                },
+                process.env.REFRESH_TOKEN_SECRET,
+                { expiresIn: refreshTokenExpireTime }
+            );
+
+            const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken), newRefreshToken];
+            await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
+
+            res.status(200).json({accessToken: accessToken, refreshToken: newRefreshToken});
         }
     );
 }
@@ -105,7 +128,8 @@ export const logout = async (req, res) => {
         return res.sendStatus(204);
     }
 
-    await usersModel.resetRefreshTokenByUserId(foundUser.id);
+    const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken)];
+    await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
 
     res.sendStatus(204);
 }

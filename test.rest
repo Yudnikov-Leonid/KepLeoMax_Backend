@@ -2,17 +2,14 @@
 GET http://localhost:13000
 
 ###
-
 GET http://localhost:13000/setup
-
 ###
-
 POST http://localhost:13000/api/user/register
 Content-Type: application/json
 
 {
-    "email": "email2",
-    "password": "password2"
+    "email": "email",
+    "password": "password"
 }
 
 ###
@@ -21,8 +18,8 @@ POST http://localhost:13000/api/user/login
 Content-Type: application/json
 
 {
-    "email": "email2",
-    "password": "password2"
+    "email": "email",
+    "password": "password"
 }
 
 ###
@@ -31,7 +28,7 @@ POST http://localhost:13000/api/user/refresh
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsbmV3IiwiaWF0IjoxNzYyNDQ4MTI0LCJleHAiOjE3NjI1MzQ1MjR9.-mPd6bbvMVfHKCa133vBPVFAI9mb5PEDOqut4hzbx3M"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NjA0MDMsImV4cCI6MTc2MjU0NjgwM30.f6JkoGxDgYTE40SZcgKwdSfKcLy0kC-3YTCYb-Xb5YE"
 }
 
 ###
@@ -40,7 +37,7 @@ POST http://localhost:13000/api/user/logout
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsbmV3IiwiaWF0IjoxNzYyNDQ4MTI0LCJleHAiOjE3NjI1MzQ1MjR9.-mPd6bbvMVfHKCa133vBPVFAI9mb5PEDOqut4hzbx3M"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NjAzNDksImV4cCI6MTc2MjU0Njc0OX0.Bhh3PItqB1K0nFomYzvmtkrcgDHnvAF7-jTnyH2nSEo"
 }
 
 ###
