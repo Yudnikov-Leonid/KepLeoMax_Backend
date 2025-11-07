@@ -1,16 +1,13 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { usersModel } from '../models/usersModel.js';
-import { profilesModel } from '../models/profilesModel.js';
+import * as usersModel from '../models/usersModel.js'
+import * as profilesModel from '../models/profilesModel.js';
 
 const accessTokenExpireTime = '300s'
 const refreshTokenExpireTime = '1d'
 
 export const createNewUser = async (req, res) => {
-    const {email, password} = req.body;
-    if (!email || !password) {
-        return res.status(400).json({message: 'Email and password are required'});
-    }
+    const { email, password } = req.body;
 
     // check duplicates
     if (await usersModel.haveDuplicateWithEmail(email)) {
@@ -22,51 +19,62 @@ export const createNewUser = async (req, res) => {
         const userId = await usersModel.createUser(email, hashedPassword);
         await profilesModel.createUserProfile(userId);
 
-        res.status(201).json({success: `New user ${email} created`});
+        res.status(201).json({ success: `New user ${email} created` });
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: err.message });
     }
 }
 
 export const login = async (req, res) => {
-    const {email, password} = req.body;
-    if (!email || !password) {
-        return res.status(400).json({message: 'Email and password are required'});
-    }
+    const { email, password } = req.body;
 
     const foundUser = await usersModel.getUserByEmail(email);
     if (!foundUser) {
-        return res.status(401).json({ message: `User with email ${email} was not found` });
+        return res.status(401).json({ message: `User with email ${email} not found` });
     }
 
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
         const accessToken = jwt.sign(
-            { "UserInfo": {
-                "id": foundUser.id,
-                "email": foundUser.email
-            }
+            {
+                "UserInfo": {
+                    "id": foundUser.id,
+                    "email": foundUser.email
+                }
             },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: accessTokenExpireTime }
         );
         const refreshToken = jwt.sign(
-            { "UserInfo": {
-                "id": foundUser.id,
-                "email": foundUser.email
-            }
+            {
+                "UserInfo": {
+                    "id": foundUser.id,
+                    "email": foundUser.email
+                }
             },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: refreshTokenExpireTime }
         );
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
-                
+
         res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
     } else {
-        res.status(401).json({message: 'Password is incorrect'});
+        res.status(401).json({ message: 'Password is incorrect' });
     }
 }
+
+// const jwtVerify = (refreshToken) => new Promise((resolve, reject) => {
+//     jwt.verify(
+//         refreshToken,
+//         process.env.REFRESH_TOKEN_SECRET,
+//         async (err, decoded) => {
+//             if (err) reject(err);
+//             resolve(decoded);
+//         });
+// });
+
 
 export const refreshToken = async (req, res) => {
     const refreshToken = req.body?.refreshToken;
@@ -75,15 +83,14 @@ export const refreshToken = async (req, res) => {
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
         jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (err, decoded) => {
-            if (err) return res.sendStatus(403);
-            const hackedUser = await usersModel.getUserByEmail(decoded.UserInfo.email);
-            if (!hackedUser) return res.sendStatus(403);
-            await usersModel.resetRefreshTokensByUserId(hackedUser.id);
-        });
-
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET,
+            async (err, decoded) => {
+                if (err) return;
+                const hackedUser = await usersModel.getUserById(decoded.UserInfo.id);
+                if (!hackedUser) return;
+                await usersModel.resetRefreshTokensByUserId(hackedUser.id);
+            });
         return res.sendStatus(403);
     }
 
@@ -92,20 +99,22 @@ export const refreshToken = async (req, res) => {
         process.env.REFRESH_TOKEN_SECRET,
         async (err, decoded) => {
             if (err || foundUser.email !== decoded.UserInfo.email) return res.sendStatus(403);
-            const accessToken = jwt.sign(
-                { "UserInfo": {
-                    "id": decoded.id,
-                    "email": decoded.email
-                }
+            const newAccessToken = jwt.sign(
+                {
+                    "UserInfo": {
+                        "id": decoded.UserInfo.id,
+                        "email": decoded.UserInfo.email
+                    }
                 },
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: accessTokenExpireTime }
             );
             const newRefreshToken = jwt.sign(
-                { "UserInfo": {
-                    "id": foundUser.id,
-                    "email": foundUser.email
-                }
+                {
+                    "UserInfo": {
+                        "id": decoded.UserInfo.id,
+                        "email": decoded.UserInfo.email
+                    }
                 },
                 process.env.REFRESH_TOKEN_SECRET,
                 { expiresIn: refreshTokenExpireTime }
@@ -114,7 +123,7 @@ export const refreshToken = async (req, res) => {
             const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken), newRefreshToken];
             await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
 
-            res.status(200).json({accessToken: accessToken, refreshToken: newRefreshToken});
+            res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
         }
     );
 }

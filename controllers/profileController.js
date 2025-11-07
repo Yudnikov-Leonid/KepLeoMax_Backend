@@ -1,4 +1,4 @@
-import { profilesModel } from "../models/profilesModel.js";
+import * as profilesModel from "../models/profilesModel.js";
 
 export const editProfile = async (req, res) => {
     const userId = req.userId;

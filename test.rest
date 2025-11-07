@@ -8,8 +8,8 @@ POST http://localhost:13000/api/user/register
 Content-Type: application/json
 
 {
-    "email": "email",
-    "password": "password"
+    "email": "email@cool.com",
+    "password": "passss"
 }
 
 ###
@@ -18,8 +18,8 @@ POST http://localhost:13000/api/user/login
 Content-Type: application/json
 
 {
-    "email": "email",
-    "password": "password"
+    "email": "email@cool.com",
+    "password": "passss"
 }
 
 ###
@@ -28,7 +28,7 @@ POST http://localhost:13000/api/user/refresh
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NjA0MDMsImV4cCI6MTc2MjU0NjgwM30.f6JkoGxDgYTE40SZcgKwdSfKcLy0kC-3YTCYb-Xb5YE"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTA1MDIsImV4cCI6MTc2MjU5NjkwMn0.kQZHbPr0w60qalNsNk6jXlSpF4IN80ndNDtd0AOkGhs"
 }
 
 ###
