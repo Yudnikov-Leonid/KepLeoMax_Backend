@@ -41,17 +41,17 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:13000/profile/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NTYyNDgsImV4cCI6MTc2MjQ1NjU0OH0.YULr6BOZt7u9Q4PJ-H6d17H_YsIQubG4jR8ahN-hv_k
+GET http://localhost:13000/profile?userId=2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTQ1MjUsImV4cCI6MTc2MjUxNDgyNX0.wNzgyyUI0PHe6E9xo807aFFjckhtQEEN6AT6Mo_9V5w
 #Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbDIifSwiaWF0IjoxNzYyNDU2MzQ4LCJleHAiOjE3NjI0NTY2NDh9.L5dlDJKZ-0ROSYeaJ3TIjSOSNbG6Q2CClcburNbpN68
 
 ###
 POST http://localhost:13000/profile/
 #Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NTYyNDgsImV4cCI6MTc2MjQ1NjU0OH0.YULr6BOZt7u9Q4PJ-H6d17H_YsIQubG4jR8ahN-hv_k
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbDIifSwiaWF0IjoxNzYyNDU2MzQ4LCJleHAiOjE3NjI0NTY2NDh9.L5dlDJKZ-0ROSYeaJ3TIjSOSNbG6Q2CClcburNbpN68
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTQ1MjUsImV4cCI6MTc2MjUxNDgyNX0.wNzgyyUI0PHe6E9xo807aFFjckhtQEEN6AT6Mo_9V5w
 Content-Type: application/json
 
 {
-    "username": "username2",
+    "username": "Amazing username",
     "description": "the coolest description"
 }

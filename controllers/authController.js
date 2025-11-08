@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as usersModel from '../models/usersModel.js'
 import * as profilesModel from '../models/profilesModel.js';
+import convertUserToSend from '../utills/convertUser.js';
 
 const accessTokenExpireTime = '300s'
 const refreshTokenExpireTime = '1d'
@@ -59,7 +60,7 @@ export const login = async (req, res) => {
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
 
-        res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+        res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser) });
     } else {
         res.status(401).json({ message: 'Password is incorrect' });
     }
@@ -109,21 +110,22 @@ export const refreshToken = async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: accessTokenExpireTime }
             );
-            const newRefreshToken = jwt.sign(
-                {
-                    "UserInfo": {
-                        "id": decoded.UserInfo.id,
-                        "email": decoded.UserInfo.email
-                    }
-                },
-                process.env.REFRESH_TOKEN_SECRET,
-                { expiresIn: refreshTokenExpireTime }
-            );
+            // refreshToken is not needed now
+            // const newRefreshToken = jwt.sign(
+            //     {
+            //         "UserInfo": {
+            //             "id": decoded.UserInfo.id,
+            //             "email": decoded.UserInfo.email
+            //         }
+            //     },
+            //     process.env.REFRESH_TOKEN_SECRET,
+            //     { expiresIn: refreshTokenExpireTime }
+            // );
 
-            const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken), newRefreshToken];
-            await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
+            // const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken), newRefreshToken];
+            // await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
 
-            res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+            res.status(200).json({ accessToken: newAccessToken });
         }
     );
 }

@@ -27,14 +27,19 @@ export const getUserByRefreshToken = async (refreshToken) => {
     }
 }
 
+const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
 export const createUser = async (email, hashedPassword) => {
-    const result = await pool.query('INSERT INTO users (email, password, refresh_tokens) VALUES ($1, $2, $3) RETURNING id', [email, hashedPassword, []]);
+    const result = await pool.query('INSERT INTO users (username, email, password, refresh_tokens) VALUES ($1, $2, $3, $4) RETURNING id', [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword, []]);
     return result.rows[0].id;
 }
 
 export const haveDuplicateWithEmail = async (email) => {
     const duplicates = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     return duplicates.rows.length !== 0;
+}
+
+export const updateUsername = async (id, username) => {
+    await pool.query(`UPDATE users SET username = $1 WHERE id = $2`, [username, id]);
 }
 
 export const updateRefreshTokens = async (id, tokens) => {

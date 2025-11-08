@@ -1,6 +1,7 @@
 import express from 'express';
 import router from './routes/router.js';
 import authRouter from './routes/auth.js';
+import userRouter from './routes/user.js';
 import profileRouter from './routes/profile.js';
 import errorHandler from './middleware/error.js';
 import notFound from './middleware/notFound.js';
@@ -24,7 +25,7 @@ app.use(express.urlencoded());
 app.use(cookieParser());
 
 // Routes
-app.use('/api/user', authRouter);
+app.use('/api/auth', authRouter);
 
 app.get('/setup', async (req, res) => {
     await pool.query('DROP DATABASE IF EXISTS KLM_db');
@@ -32,12 +33,13 @@ app.get('/setup', async (req, res) => {
     await pool.query('DROP TABLE IF EXISTS profiles');
 
     await pool.query('CREATE DATABASE KLM_db;');
-    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(100), password VARCHAR(100), refresh_tokens text[])');
-    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, username VARCHAR(100), description VARCHAR(100))');
+    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50), email VARCHAR(100), password VARCHAR(100), refresh_tokens text[])');
+    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(100))');
     res.json({message: 'tables created'});
 });
 
 app.use(verifyJWT);
+app.use('/api/user', userRouter);
 app.use('/api', router);
 app.use('/profile', profileRouter);
 
