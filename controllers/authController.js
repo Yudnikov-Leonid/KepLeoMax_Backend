@@ -32,7 +32,7 @@ export const login = async (req, res) => {
 
     const foundUser = await usersModel.getUserByEmail(email);
     if (!foundUser) {
-        return res.status(401).json({ message: `User with email ${email} not found` });
+        return res.status(404).json({ message: `User with email ${email} not found` });
     }
 
     const match = await bcrypt.compare(password, foundUser.password);
@@ -60,7 +60,7 @@ export const login = async (req, res) => {
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
 
-        res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser) });
+        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser) } });
     } else {
         res.status(401).json({ message: 'Password is incorrect' });
     }

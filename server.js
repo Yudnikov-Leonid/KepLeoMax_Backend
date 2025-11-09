@@ -34,14 +34,14 @@ app.get('/setup', async (req, res) => {
 
     await pool.query('CREATE DATABASE KLM_db;');
     await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50), email VARCHAR(100), password VARCHAR(100), refresh_tokens text[])');
-    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(100))');
+    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(200))');
     res.json({message: 'tables created'});
 });
 
 app.use(verifyJWT);
 app.use('/api/user', userRouter);
 app.use('/api', router);
-app.use('/profile', profileRouter);
+app.use('/api/profile', profileRouter);
 
 // Error handlers
 app.use(notFound);

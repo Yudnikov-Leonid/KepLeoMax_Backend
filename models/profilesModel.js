@@ -28,6 +28,6 @@ export const editProfileByUserId = async (userId, description) => {
 }
 
 const updateProfile = async (userId, description) => {
-    const result = await pool.query('UPDATE profiles SET description = $1 WHERE user_id = $3 RETURNING id, user_id, username, description', [description, userId]);
+    const result = await pool.query('UPDATE profiles SET description = $1 WHERE user_id = $2 RETURNING id, user_id, description', [description, userId]);
     return result.rows[0];
 }

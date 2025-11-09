@@ -4,36 +4,46 @@ GET http://localhost:13000
 ###
 GET http://localhost:13000/setup
 ###
-POST http://localhost:13000/api/user/register
+POST http://localhost:13000/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "emaildfdfd@cool.com",
+    "password": "pas"
+}
+
+###
+
+POST http://localhost:13000/api/auth/login
 Content-Type: application/json
 
 {
     "email": "email@cool.com",
-    "password": "passss"
+    "password": "pass123"
 }
 
 ###
 
-POST http://localhost:13000/api/user/login
+POST http://localhost:13000/api/auth/refresh
 Content-Type: application/json
 
 {
-    "email": "email@cool.com",
-    "password": "passss"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1NTc0MzgsImV4cCI6MTc2MjY0MzgzOH0.aszzzO0Il9ISTo6kqF8-ZckBs_ZGydNWynA4aAwGpm0"
 }
 
 ###
 
-POST http://localhost:13000/api/user/refresh
+POST http://localhost:13000/api/user/edit
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1OTQ3MjcsImV4cCI6MTc2MjU5NTAyN30.yj8dcEIp5Ou75gw9_aS2962xqGpzjeIODhoXZUIHQws
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTA1MDIsImV4cCI6MTc2MjU5NjkwMn0.kQZHbPr0w60qalNsNk6jXlSpF4IN80ndNDtd0AOkGhs"
+    "username": "new username"
 }
 
 ###
 
-POST http://localhost:13000/api/user/logout
+POST http://localhost:13000/api/auth/logout
 Content-Type: application/json
 
 {
@@ -41,17 +51,16 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:13000/profile?userId=2
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTQ1MjUsImV4cCI6MTc2MjUxNDgyNX0.wNzgyyUI0PHe6E9xo807aFFjckhtQEEN6AT6Mo_9V5w
+GET http://localhost:13000/profile?userId=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MDE4MDIsImV4cCI6MTc2MjcwMjEwMn0.GUS5OewrXNWOUdHND-vZ_nsP6OT6oYnCrxVUlMNQfu8
 #Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbDIifSwiaWF0IjoxNzYyNDU2MzQ4LCJleHAiOjE3NjI0NTY2NDh9.L5dlDJKZ-0ROSYeaJ3TIjSOSNbG6Q2CClcburNbpN68
 
 ###
 POST http://localhost:13000/profile/
 #Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbCJ9LCJpYXQiOjE3NjI0NTYyNDgsImV4cCI6MTc2MjQ1NjU0OH0.YULr6BOZt7u9Q4PJ-H6d17H_YsIQubG4jR8ahN-hv_k
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MiwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI1MTQ1MjUsImV4cCI6MTc2MjUxNDgyNX0.wNzgyyUI0PHe6E9xo807aFFjckhtQEEN6AT6Mo_9V5w
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MDE4MDIsImV4cCI6MTc2MjcwMjEwMn0.GUS5OewrXNWOUdHND-vZ_nsP6OT6oYnCrxVUlMNQfu8
 Content-Type: application/json
 
 {
-    "username": "Amazing username",
-    "description": "the coolest description"
+    "description": "Looooooong description"
 }
