@@ -9,3 +9,8 @@ services:
     image: kepleomax-node-app
     ports: 
       - 13000:3000
+    volumes:
+      - meida:/usr/src/app/uploads
+
+volumes:
+  meida:

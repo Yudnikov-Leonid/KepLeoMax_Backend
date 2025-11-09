@@ -8,13 +8,13 @@ export const editProfile = async (req, res) => {
         return res.sendStatus(401);
     }
 
-    const { username, description } = req.body;
-    if (!username || !description) {
-        return res.status(400).json({message: 'username and descriprion fields are required'});
+    const { username, description, profileImage } = req.body;
+    if (!username) {
+        return res.status(400).json({message: 'the username field is required'});
     }
 
-    const newProfile = await profilesModel.editProfileByUserId(userId, description);
-    await usersModel.updateUsername(userId, username);
+    const newProfile = await profilesModel.editProfileByUserId(userId, description ?? '');
+    await usersModel.updateUser(userId, username, profileImage ?? '');
     const newUser = await usersModel.getUserById(req.userId); // TODO double query
     newProfile.user = convertUserToSend(newUser);
     res.status(200).json({data: newProfile});

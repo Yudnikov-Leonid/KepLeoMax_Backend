@@ -29,7 +29,7 @@ export const getUserByRefreshToken = async (refreshToken) => {
 
 const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
 export const createUser = async (email, hashedPassword) => {
-    const result = await pool.query('INSERT INTO users (username, email, password, refresh_tokens) VALUES ($1, $2, $3, $4) RETURNING id', [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword, []]);
+    const result = await pool.query("INSERT INTO users (username, email, password, profile_image, refresh_tokens) VALUES ($1, $2, $3, '', '{}') RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
     return result.rows[0].id;
 }
 
@@ -38,8 +38,8 @@ export const haveDuplicateWithEmail = async (email) => {
     return duplicates.rows.length !== 0;
 }
 
-export const updateUsername = async (id, username) => {
-    await pool.query(`UPDATE users SET username = $1 WHERE id = $2`, [username, id]);
+export const updateUser = async (id, username, profileImage) => {
+    await pool.query(`UPDATE users SET username = $1, profile_image = $2 WHERE id = $3`, [username, profileImage, id]);
 }
 
 export const updateRefreshTokens = async (id, tokens) => {

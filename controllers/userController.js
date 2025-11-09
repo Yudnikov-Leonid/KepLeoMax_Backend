@@ -15,13 +15,13 @@ export const getUser = async (req, res) => {
     res.status(200).json({data: convertUserToSend(user)});
 }
 
-export const updateUsername = async (req, res) => {
-    const username = req.body?.username;
-    if (!username) {
-        return res.status(400).json({message: 'username field is required'});
+export const updateUser = async (req, res) => {
+    const {username, profileImage} = req.body;
+    if (!username || !profileImage) {
+        return res.status(400).json({message: 'username and profileImage fields are required'});
     }
 
-    await usersModel.updateUsername(req.userId, username);
+    await usersModel.updateUser(req.userId, username, profileImage);
     const newUser = await usersModel.getUserById(req.userId); // TODO double query
     
     res.status(200).json({data: convertUserToSend(newUser)});
