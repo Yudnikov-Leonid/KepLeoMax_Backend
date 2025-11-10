@@ -31,6 +31,27 @@ Content-Type: application/json
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MTk4MzQsImV4cCI6MTc2MjgwNjIzNH0.VVBzd_LScgavURXW1QvrqbybkFu6Mp3Md0JOyoYM2AE"
 }
 
+
+### posts
+POST http://localhost:13000/api/posts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI4MDUyNjEsImV4cCI6MTc2MjgwNTU2MX0.fPy3BOSyBWZFQcF4KYKuuDjoLQU9fbMkxIWN0rumjgA
+Content-Type: application/json
+
+{
+    "content": "Super cool post content2",
+    "images": ["image1", "image2"]
+}
+
+###
+
+GET http://localhost:13000/api/posts/byUserId?userId=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI4MDUyNjEsImV4cCI6MTc2MjgwNTU2MX0.fPy3BOSyBWZFQcF4KYKuuDjoLQU9fbMkxIWN0rumjgA
+Content-Type: application/json
+
+{
+    "userId": 1
+}
+
 ###
 
 POST http://localhost:13000/api/user/edit
