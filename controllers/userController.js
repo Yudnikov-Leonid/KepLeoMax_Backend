@@ -12,7 +12,7 @@ export const getUser = async (req, res) => {
         res.status(404).json({message: 'User not found'});
     }
 
-    res.status(200).json({data: convertUserToSend(user)});
+    res.status(200).json({data: convertUserToSend(user, req)});
 }
 
 export const updateUser = async (req, res) => {
@@ -24,5 +24,5 @@ export const updateUser = async (req, res) => {
     await usersModel.updateUser(req.userId, username, profileImage);
     const newUser = await usersModel.getUserById(req.userId); // TODO double query
     
-    res.status(200).json({data: convertUserToSend(newUser)});
+    res.status(200).json({data: convertUserToSend(newUser, req)});
 }

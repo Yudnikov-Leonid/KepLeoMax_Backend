@@ -14,7 +14,11 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + suffix + extension);
     }
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage, limits: {
+        fileSize: 10 * 1024 * 1024 // 10 MB
+    }
+});
 
 router.post('/single', verifyJWT, upload.single('file'), (req, res) => {
     res.status(201).json({ data: { path: req.file.filename } });
@@ -34,7 +38,7 @@ router.get('/:fileName', (req, res) => {
     res.download(imagePath, (err) => {
         if (err) {
             console.error('Error downloading image:', err);
-            res.status(500).json({message: `Error downloading image: ${err}`});
+            res.status(500).json({ message: `Error downloading image: ${err}` });
         }
     });
 });

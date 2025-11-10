@@ -34,12 +34,12 @@ Content-Type: application/json
 ###
 
 POST http://localhost:13000/api/user/edit
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MjU1NDIsImV4cCI6MTc2MjcyNTg0Mn0.Q_rFd2PRzTN9kN8dVWLfjUlseQOt06jK9bQ3Y0Mx8R4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MjY3MDYsImV4cCI6MTc2MjcyNzAwNn0.6PT44piO1sr4cBuhO-MdDESzT7shuXAXz01kIHdeP48
 Content-Type: application/json
 
 {
     "username": "new username",
-    "profileImage": "file-1762724716331-879434841.png"
+    "profileImage": "file-1762726731539-146263654.jpg"
 }
 
 ###

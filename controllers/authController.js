@@ -60,7 +60,7 @@ export const login = async (req, res) => {
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
 
-        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser) } });
+        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, {userId: foundUser.id}) } });
     } else {
         res.status(401).json({ message: 'Password is incorrect' });
     }

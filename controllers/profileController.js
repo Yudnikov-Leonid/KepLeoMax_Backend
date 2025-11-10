@@ -16,7 +16,7 @@ export const editProfile = async (req, res) => {
     const newProfile = await profilesModel.editProfileByUserId(userId, description ?? '');
     await usersModel.updateUser(userId, username, profileImage ?? '');
     const newUser = await usersModel.getUserById(req.userId); // TODO double query
-    newProfile.user = convertUserToSend(newUser);
+    newProfile.user = convertUserToSend(newUser, req);
     res.status(200).json({data: newProfile});
 }
 
@@ -31,7 +31,7 @@ export const getProfile = async (req, res) => {
         return res.status(404).json({message: `Profile of user with id ${userId} not found`});
     }
     const user = await usersModel.getUserById(userId);
-    profile.user = convertUserToSend(user);
+    profile.user = convertUserToSend(user, req);
 
     res.status(200).json({data: profile});
 }
