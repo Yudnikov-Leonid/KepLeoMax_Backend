@@ -45,7 +45,7 @@ export const updatePost = async (req, res) => {
     }
 
     await postsModel.updatePost(postId, content, images);
-    
+
     post = await postsModel.getPostById(postId);
     const user = await usersModel.getUserById(userId);
     post.user = convertUserToSend(user, req);
@@ -65,6 +65,25 @@ export const getPostsByUserId = async (req, res) => {
     posts.forEach(post => {
         post.user = user;
     });
+
+    res.status(200).json({ data: posts ?? [] });
+}
+
+export const getPosts = async (req, res) => {
+    const limit = req.query.limit ?? 999;
+    const offset = req.query.offset ?? 0;
+
+    let posts = await postsModel.getPostsWithLimit(limit, offset);
+    const usersMap = new Map();
+    for(let i = 0; i < posts.length; i++){
+        const userId = posts[i].user_id;
+        if (!usersMap.get(userId)) {
+            const user = await usersModel.getUserById(userId);
+            usersMap.set(userId, convertUserToSend(user, req));
+        }
+        posts[i].user = usersMap.get(userId);
+    }
+
 
     res.status(200).json({ data: posts ?? [] });
 }

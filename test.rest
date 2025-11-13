@@ -34,7 +34,10 @@ Content-Type: application/json
 
 ### posts
 GET http://localhost:13000/api/posts/byUserId?userId=1&limit=2&offset=0
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMzQzMDIsImV4cCI6MTc2MzAzNDYwMn0.1GE-sOcP-0MaqeCf_w08Re8y2biEcm2eY-JB2MW6W6M
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMzQ2NDAsImV4cCI6MTc2MzAzNDk0MH0.Ui2j70jIFDPTcCKdYDPV0sDj_utwboIHfVNoYIi3P_c
+###
+GET http://localhost:13000/api/posts?userId=1&limit=5&offset=0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwNTY4NjIsImV4cCI6MTc2MzA1NzE2Mn0.n5TOce-juYZ25KX2oDHvfC9Tufvjr8UYEOCM7pqTWZQ
 ###
 POST http://localhost:13000/api/posts
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI4MDUyNjEsImV4cCI6MTc2MjgwNTU2MX0.fPy3BOSyBWZFQcF4KYKuuDjoLQU9fbMkxIWN0rumjgA
@@ -48,15 +51,14 @@ Content-Type: application/json
 DELETE http://localhost:13000/api/posts?postId=31
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMjU0NTQsImV4cCI6MTc2MzAyNTc1NH0.nyYS6O1SGahV-ZEYTi4Fugm39hC5_1jws_E34A2S0hE
 ###
-PUT http://localhost:13000/api/posts?postId=25
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMzQzMDIsImV4cCI6MTc2MzAzNDYwMn0.1GE-sOcP-0MaqeCf_w08Re8y2biEcm2eY-JB2MW6W6M
+PUT http://localhost:13000/api/posts?postId=35
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMzQ2NDAsImV4cCI6MTc2MzAzNDk0MH0.Ui2j70jIFDPTcCKdYDPV0sDj_utwboIHfVNoYIi3P_c
 Content-Type: application/json
 
 {
-    "content": "Put content",
+    "content": "Put content2",
     "images": ["file-1763033518322-991542691.jpg"]
 }
-
 
 ### user
 POST http://localhost:13000/api/user/edit
