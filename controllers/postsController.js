@@ -6,7 +6,7 @@ export const createPost = async (req, res) => {
     const userId = req.userId;
 
     const { content, images } = req.body;
-    if (!content || !images) {
+    if (content === undefined || !images) {
         return res.status(400).json({ message: 'content and images fields are required' });
     }
     if (!Array.isArray(images)) {
@@ -19,6 +19,37 @@ export const createPost = async (req, res) => {
     const user = await usersModel.getUserById(userId);
     newPost.user = convertUserToSend(user, req);
     res.status(201).json({ data: newPost });
+}
+
+export const updatePost = async (req, res) => {
+    const userId = req.userId;
+    const postId = req.query.postId;
+    if (!postId) {
+        return res.status(400).json({ message: 'postId param is required' });
+    }
+    const { content, images } = req.body;
+    if (content === undefined || !images) {
+        return res.status(400).json({ message: 'content and images fields are required' });
+    }
+    if (!Array.isArray(images)) {
+        // TODO validate array, that each value is 32 length
+        return res.status(400).json({ message: 'images must be an array' });
+    }
+
+    let post = await postsModel.getPostById(postId);
+    if (!post) {
+        return res.status(404).json({ message: `Post with id ${postId} not found` });
+    }
+    if (post.user_id != userId) {
+        return res.sendStatus(403);
+    }
+
+    await postsModel.updatePost(postId, content, images);
+    
+    post = await postsModel.getPostById(postId);
+    const user = await usersModel.getUserById(userId);
+    post.user = convertUserToSend(user, req);
+    res.status(200).json({ data: post });
 }
 
 export const getPostsByUserId = async (req, res) => {
@@ -39,6 +70,7 @@ export const getPostsByUserId = async (req, res) => {
 }
 
 export const deletePost = async (req, res) => {
+    const userId = req.userId;
     const postId = req.query.postId;
     if (!postId) {
         return res.status(400).json({ message: 'postId param is required' });
@@ -46,13 +78,15 @@ export const deletePost = async (req, res) => {
 
     const post = await postsModel.getPostById(postId);
     if (!post) {
-        return res.status(404).json({message: `Post with id ${postId} not found`});
+        return res.status(404).json({ message: `Post with id ${postId} not found` });
     }
-    if (post.user_id != req.userId) {
+    if (post.user_id != userId) {
         return res.sendStatus(403);
     }
 
     await postsModel.deletePostById(postId);
 
-    res.status(200).json({data: post});
+    const user = await usersModel.getUserById(userId);
+    post.user = convertUserToSend(user, req);
+    res.status(200).json({ data: post });
 }

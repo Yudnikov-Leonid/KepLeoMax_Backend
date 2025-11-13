@@ -19,6 +19,10 @@ export const createNewPost = async (userId, content, images) => {
     return result.rows[0].id;
 }
 
+export const updatePost = async (postId, content, images) => {
+    await pool.query(`UPDATE posts SET content = '${content}', images = '{${images.map(image => `"${image}"`)}}' WHERE id = ${postId}`);
+}
+
 export const getPostsWithLimit = async (limit) => {
     const result = await pool.query(`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit}`);
     return result.rows;
