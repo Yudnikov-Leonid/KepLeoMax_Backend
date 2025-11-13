@@ -9,8 +9,8 @@ export const getPostById = async (postId) => {
     }
 }
 
-export const getPostsByUserId = async (userId, limit) => {
-    const result = await pool.query(`SELECT * FROM posts WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`);
+export const getPostsByUserId = async (userId, limit, offset) => {
+    const result = await pool.query(`SELECT * FROM posts WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`);
     return result.rows;
 }
 
@@ -22,4 +22,8 @@ export const createNewPost = async (userId, content, images) => {
 export const getPostsWithLimit = async (limit) => {
     const result = await pool.query(`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit}`);
     return result.rows;
+}
+
+export const deletePostById = async (id) => {
+    await pool.query(`DELETE FROM posts WHERE id = ${id}`);
 }

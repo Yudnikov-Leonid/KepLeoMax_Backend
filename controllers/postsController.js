@@ -26,12 +26,33 @@ export const getPostsByUserId = async (req, res) => {
     if (!userId) {
         return res.status(400).json({ message: 'userId param is required' });
     }
+    const limit = req.query.limit ?? 999;
+    const offset = req.query.offset ?? 0;
 
-    let posts = await postsModel.getPostsByUserId(userId, 10);
+    let posts = await postsModel.getPostsByUserId(userId, limit, offset);
     const user = convertUserToSend(await usersModel.getUserById(userId), req);
     posts.forEach(post => {
         post.user = user;
     });
 
     res.status(200).json({ data: posts ?? [] });
+}
+
+export const deletePost = async (req, res) => {
+    const postId = req.query.postId;
+    if (!postId) {
+        return res.status(400).json({ message: 'postId param is required' });
+    }
+
+    const post = await postsModel.getPostById(postId);
+    if (!post) {
+        return res.status(404).json({message: `Post with id ${postId} not found`});
+    }
+    if (post.user_id != req.userId) {
+        return res.sendStatus(403);
+    }
+
+    await postsModel.deletePostById(postId);
+
+    res.status(200).json({data: post});
 }
