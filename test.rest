@@ -13,7 +13,6 @@ Content-Type: application/json
 }
 
 ###
-
 POST http://localhost:13000/api/auth/login
 Content-Type: application/json
 
@@ -21,7 +20,6 @@ Content-Type: application/json
     "email": "email@cool.com",
     "password": "pass123"
 }
-
 ###
 
 POST http://localhost:13000/api/auth/refresh
@@ -31,6 +29,9 @@ Content-Type: application/json
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MTk4MzQsImV4cCI6MTc2MjgwNjIzNH0.VVBzd_LScgavURXW1QvrqbybkFu6Mp3Md0JOyoYM2AE"
 }
 
+### user
+GET http://localhost:13000/api/user/search?limit=2&search=
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwNzIzNzAsImV4cCI6MTc2MzA3MjY3MH0.GkndtUzA3dpmwK1MR_IOGeF4LKB7OlLIyOW9q8UvYQk
 
 ### posts
 GET http://localhost:13000/api/posts/byUserId?userId=1&limit=2&offset=0
@@ -42,7 +43,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZ
 POST http://localhost:13000/api/posts
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI4MDUyNjEsImV4cCI6MTc2MjgwNTU2MX0.fPy3BOSyBWZFQcF4KYKuuDjoLQU9fbMkxIWN0rumjgA
 Content-Type: application/json
-
 {
     "content": "Super cool post content2",
     "images": ["image1", "image2"]
@@ -54,22 +54,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZ
 PUT http://localhost:13000/api/posts?postId=35
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjMwMzQ2NDAsImV4cCI6MTc2MzAzNDk0MH0.Ui2j70jIFDPTcCKdYDPV0sDj_utwboIHfVNoYIi3P_c
 Content-Type: application/json
-
 {
     "content": "Put content2",
     "images": ["file-1763033518322-991542691.jpg"]
 }
-
 ### user
 POST http://localhost:13000/api/user/edit
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySW5mbyI6eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBjb29sLmNvbSJ9LCJpYXQiOjE3NjI3MjY3MDYsImV4cCI6MTc2MjcyNzAwNn0.6PT44piO1sr4cBuhO-MdDESzT7shuXAXz01kIHdeP48
 Content-Type: application/json
-
 {
     "username": "new username",
     "profileImage": "file-1762726731539-146263654.jpg"
 }
-
 ###
 
 POST http://localhost:13000/api/auth/logout

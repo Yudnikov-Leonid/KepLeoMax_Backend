@@ -26,3 +26,23 @@ export const updateUser = async (req, res) => {
     
     res.status(200).json({data: convertUserToSend(newUser, req)});
 }
+
+export const searchUsers = async (req, res) => {
+    const userId = req.userId;
+    const search = req.query.search;
+    if (search == undefined) {
+        return res.status(400).json({message: 'search param is required'});
+    }
+    const limit = req.query.limit ?? 10;
+    const offset = req.query.offset ?? 0;
+
+    const users = await usersModel.searchUsers(search, limit, offset);
+    const newUsersList = [];
+    users.forEach(user => {
+        if (user.id != userId) {
+            newUsersList.push(convertUserToSend(user, req));
+        }
+    });
+
+    res.status(200).json({data: newUsersList});
+}

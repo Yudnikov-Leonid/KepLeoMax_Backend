@@ -18,6 +18,11 @@ export const getUserById = async (id) => {
     }
 }
 
+export const searchUsers = async (search, limit, offset) => {
+    const result = await pool.query(`SELECT * FROM users WHERE (lower(username) LIKE lower('%${search}%')) ORDER BY email ASC LIMIT ${limit} OFFSET ${offset}`);
+    return result.rows;
+}
+
 export const getUserByRefreshToken = async (refreshToken) => {
     const result = await pool.query('SELECT * FROM users WHERE $1 = ANY(refresh_tokens)', [refreshToken]);
     if (result.rows.length === 0) {
