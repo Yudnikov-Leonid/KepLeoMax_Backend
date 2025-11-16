@@ -5,12 +5,12 @@ export const createNewChat = async (userIds) => {
     return result.rows[0].id;
 }
 
-export const getChat = async (chatId) => {
+export const getChatById = async (chatId) => {
     const result = await pool.query(`SELECT * FROM chats WHERE id = ${chatId}`);
     if (result.rows.length === 0) {
         return null;
     } else {
-        return result.rows[1];
+        return result.rows[0];
     }
 }
 

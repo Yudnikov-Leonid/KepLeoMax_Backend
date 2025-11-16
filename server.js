@@ -17,6 +17,8 @@ import chatsRouter from './routes/chats.js';
 
 import * as chatsModel from './models/chatsModel.js';
 import * as messagesModel from './models/messagesModel.js';
+import * as usersModel from './models/usersModel.js';
+import convertUserToSend from './utills/convertUser.js';
 
 const PORT = process.env.PORT;
 
@@ -104,9 +106,28 @@ io.on('connection', socket => {
         io.in(userId.toString()).emit('new_message', newMessage);
         newMessage.is_current_user = false;
         io.in(otherUserId.toString()).emit('new_message', newMessage);
-
         console.log(`new message ${message} emitet to ${userId}, ${otherUserId}`);
-        //io.emit('new_message', newMessage);
+
+        // read messages
+        const readMessagesIds = await messagesModel.readMessages(chatId, userId);
+        if (readMessagesIds.length > 0) {
+            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
+        }
+
+
+        // emit newChat
+        // if (isNewChatCreated) {
+        //     const chat = await chatsModel.getChatById(chatId);
+        //     const currentUser = await usersModel.getUserById(userId);
+        //     const otherUser = await usersModel.getUserById(otherUserId);
+        //     // curent_user here will be false in both cases
+        //     chat.last_message = newMessage;
+        //     chat.other_user = convertUserToSend(otherUser, { userId: otherUserId });
+        //     io.in(userId.toString()).emit('new_chat', chat);
+        //     chat.other_user = convertUserToSend(currentUser, { userId: userId });
+        //     io.in(userId.toString()).emit('new_chat', chat);
+        //     console.log(`new_chat emittet`);
+        // }
     });
 
     socket.on('disconnect', () => {
