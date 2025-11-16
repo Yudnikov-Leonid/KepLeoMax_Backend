@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env server.js",
-    "dev": "node --watch --env-file=.env server.js",
+    "dev": "node --watch --env-file=.env server.js --host 0.0.0.0",
     "test": "jest",
     "docker": "docker build -t kepleomax-node-app .; docker-compose up"
   },
@@ -26,9 +26,12 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-validator": "^7.3.0",
+    "express-ws": "^5.0.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",

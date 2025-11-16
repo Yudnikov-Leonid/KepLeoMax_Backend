@@ -4,6 +4,7 @@ import notFound from './middleware/notFound.js';
 import verifyJWT from './middleware/verifyJWT.js';
 import cookieParser from 'cookie-parser';
 import pool from './db.js';
+import { Server } from 'socket.io';
 
 import router from './routes/router.js';
 import authRouter from './routes/auth.js';
@@ -11,6 +12,11 @@ import userRouter from './routes/user.js';
 import profileRouter from './routes/profile.js';
 import filesRouter from './routes/files.js';
 import postsRouter from './routes/posts.js';
+import messagesRouter from './routes/messages.js';
+import chatsRouter from './routes/chats.js';
+
+import * as chatsModel from './models/chatsModel.js';
+import * as messagesModel from './models/messagesModel.js';
 
 const PORT = process.env.PORT;
 
@@ -31,16 +37,22 @@ app.use(cookieParser());
 app.use('/api/auth', authRouter);
 
 app.get('/setup', async (req, res) => {
-    await pool.query('DROP DATABASE IF EXISTS KLM_db');
-    await pool.query('DROP TABLE IF EXISTS users');
-    await pool.query('DROP TABLE IF EXISTS profiles');
-    await pool.query('DROP TABLE IF EXISTS posts');
+    // await pool.query('DROP DATABASE IF EXISTS KLM_db');
+    // await pool.query('DROP TABLE IF EXISTS users');
+    // await pool.query('DROP TABLE IF EXISTS profiles');
+    // await pool.query('DROP TABLE IF EXISTS posts');
 
-    await pool.query('CREATE DATABASE KLM_db;');
-    await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50), email VARCHAR(100), password VARCHAR(100), profile_image VARCHAR(32), refresh_tokens TEXT[])');
-    await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(200))');
-    await pool.query('CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT, content VARCHAR(4000), images VARCHAR(32)[], users_who_liked_ids INT[], created_at BIGINT, edited_at BIGINT NULL)');
-    res.json({message: 'tables created'});
+    // await pool.query('CREATE DATABASE KLM_db;');
+    // await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50), email VARCHAR(100), password VARCHAR(100), profile_image VARCHAR(32), refresh_tokens TEXT[])');
+    // await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(200))');
+    // await pool.query('CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT, content VARCHAR(4000), images VARCHAR(32)[], users_who_liked_ids INT[], created_at BIGINT, edited_at BIGINT NULL)');
+
+    await pool.query('DROP TABLE IF EXISTS chats');
+    await pool.query('DROP TABLE IF EXISTS messages');
+
+    await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_ids INT[])');
+    await pool.query('CREATE TABLE messages (id SERIAL PRIMARY KEY, chat_id INT, sender_id INT, message VARCHAR(4000), is_read BOOLEAN DEFAULT FALSE, created_at BIGINT, edited_at BIGINT NULL DEFAULT NULL)');
+    res.json({ message: 'tables created' });
 });
 
 // app.use(express.static(path.join(__dirname, 'uploads')))
@@ -52,11 +64,52 @@ app.use('/api/user', userRouter);
 app.use('/api', router);
 app.use('/api/profile', profileRouter);
 app.use('/api/posts', postsRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/chats', chatsRouter);
 
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+// 192.168.0.106
+const expressServer = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`)
+});
+
+/// websocet
+const io = new Server(expressServer);
+
+io.on('connection', socket => {
+    const userId = socket.handshake.query.user_id;
+
+    console.log(`user ${socket.id} with id ${userId} connected`);
+
+    socket.join(userId.toString());
+
+    socket.broadcast.emit('message', `user ${socket.id.substring(0, 5)} with id ${userId} connected`);
+
+    socket.on('message', async (data) => {
+        const otherUserId = data.recipient_id;
+        const message = data.message;
+        let chatId = await chatsModel.getChatId([userId, otherUserId]);
+        if (!chatId) {
+            console.log(`creating new chat between ${userId} and ${otherUserId}`);
+            chatId = await chatsModel.createNewChat([userId, otherUserId]);
+        }
+        console.log(`chat id: ${chatId}, userId: ${userId}, otherUserId: ${otherUserId}`);
+        const messageId = await messagesModel.createNewMessage(chatId, userId, message);
+        const newMessage = await messagesModel.getMessageById(messageId);
+
+        newMessage.is_current_user = true;
+        io.in(userId.toString()).emit('new_message', newMessage);
+        newMessage.is_current_user = false;
+        io.in(otherUserId.toString()).emit('new_message', newMessage);
+
+        console.log(`new message ${message} emitet to ${userId}, ${otherUserId}`);
+        //io.emit('new_message', newMessage);
+    });
+
+    socket.on('disconnect', () => {
+        socket.broadcast.emit('message', `user ${socket.id.substring(0, 5)} with id ${userId} disconnected`);
+    });
 });

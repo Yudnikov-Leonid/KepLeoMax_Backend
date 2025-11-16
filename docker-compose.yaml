@@ -12,5 +12,6 @@ services:
     volumes:
       - meida:/usr/src/app/uploads
 
+
 volumes:
   meida:

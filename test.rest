@@ -8,7 +8,7 @@ POST http://localhost:13000/api/auth/register
 Content-Type: application/json
 
 {
-    "email": "email@cool.com",
+    "email": "email22@cool.com",
     "password": "pass123"
 }
 
