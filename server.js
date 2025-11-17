@@ -113,24 +113,27 @@ io.on('connection', socket => {
         if (readMessagesIds.length > 0) {
             io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
         }
+    });
 
+    socket.on('read_all', async (data) => {
+        const readMessagesIds = await messagesModel.readMessages(data.chat_id, userId);
+        if (readMessagesIds.length > 0) {
+            const chat = await chatsModel.getChatById(data.chat_id);
+            const otherUserId = chat.user_ids.filter(id => id != userId)[0];
+            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: data.chat_id, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
+        }
+    });
 
-        // emit newChat
-        // if (isNewChatCreated) {
-        //     const chat = await chatsModel.getChatById(chatId);
-        //     const currentUser = await usersModel.getUserById(userId);
-        //     const otherUser = await usersModel.getUserById(otherUserId);
-        //     // curent_user here will be false in both cases
-        //     chat.last_message = newMessage;
-        //     chat.other_user = convertUserToSend(otherUser, { userId: otherUserId });
-        //     io.in(userId.toString()).emit('new_chat', chat);
-        //     chat.other_user = convertUserToSend(currentUser, { userId: userId });
-        //     io.in(userId.toString()).emit('new_chat', chat);
-        //     console.log(`new_chat emittet`);
-        // }
+    socket.on('read_before_time', async (data) => {
+        const readMessagesIds = await messagesModel.readMessages(data.chat_id, userId, data.time);
+        if (readMessagesIds.length > 0) {
+            const chat = await chatsModel.getChatById(data.chat_id);
+            const otherUserId = chat.user_ids.filter(id => id != userId)[0];
+            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: data.chat_id, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
+        }
     });
 
     socket.on('disconnect', () => {
-        socket.broadcast.emit('message', `user ${socket.id.substring(0, 5)} with id ${userId} disconnected`);
+        console.log(`user ${socket.id} with id ${userId} disconnected`);
     });
 });

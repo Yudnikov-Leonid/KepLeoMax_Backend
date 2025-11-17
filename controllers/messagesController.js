@@ -7,7 +7,10 @@ export const getMessagesByChatId = async (req, res) => {
         return res.status(400).json({ message: 'chatId param is required' });
     }
 
-    const messages = await messagesModel.getAllMessagesByChatId(chatId, 1000, 0);
+    const limit = req.query.limit ?? 1000;
+    const offset = req.query.offset ?? 0;
+
+    const messages = await messagesModel.getAllMessagesByChatId(chatId, limit, offset);
     messages.forEach(message => {
         message.is_current_user = message.sender_id === userId;
     });

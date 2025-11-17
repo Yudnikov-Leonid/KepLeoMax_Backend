@@ -23,12 +23,20 @@ export const getChat = async (req, res) => {
     chat.other_user = convertUserToSend(user, req);
     const lastMessage = (await messagesModel.getAllMessagesByChatId(chat.id, 1, 0))[0];
     if (lastMessage) {
-        lastMessage.is_current_user = lastMessage.sender_id === userId;
+        const isCurrentUser = lastMessage.sender_id === userId;
+        lastMessage.is_current_user = isCurrentUser;
         chat.last_message = lastMessage;
+        if (isCurrentUser) {
+            chat.unread_count = 0;
+        } else {
+            const unreadMessages = await messagesModel.getUnreadMessages(chat.id);
+            chat.unread_count = unreadMessages.length;
+        }
     } else {
         chat.last_message = null;
+        chat.unread_count = 0;
     }
-    return res.status(200).json({data: chat});
+    return res.status(200).json({ data: chat });
 }
 
 export const getChats = async (req, res) => {
@@ -60,7 +68,7 @@ export const getChats = async (req, res) => {
     return res.status(200).json({ data: chats });
 }
 
-// doesn't return lastMessage 
+// doesn't return lastMessage and unread_count
 export const getChatWithUser = async (req, res) => {
     const userId = req.userId;
     const otherUserId = req.query.userId;
@@ -75,6 +83,7 @@ export const getChatWithUser = async (req, res) => {
         const user = await usersModel.getUserById(otherUserId);
         chat.user_ids = undefined;
         chat.other_user = convertUserToSend(user, req);
+        chat.unread_count = 0;
         return res.status(200).json({ data: chat });
     }
 }

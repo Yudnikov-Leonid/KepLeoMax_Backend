@@ -1,7 +1,7 @@
 import pool from "../db.js";
 
 export const createNewMessage = async (chatId, senderId, message) => {
-    const result = await pool.query(`INSERT INTO messages (chat_id, sender_id, message, created_at) VALUES (${chatId}, ${senderId}, '${message}', ${Date.now()}) RETURNING id`);
+    const result = await pool.query(`INSERT INTO messages (chat_id, sender_id, message, created_at) VALUES ($1, $2, $3, $4) RETURNING id`, [chatId, senderId, message, Date.now()]);
     return result.rows[0].id;
 }
 
@@ -29,7 +29,8 @@ export const getUnreadMessages = async (chatId) => {
     return result.rows;
 }
 
-export const readMessages = async (chatId, currentUser) => {
-    const result = await pool.query(`UPDATE messages SET is_read = TRUE WHERE chat_id = ${chatId} AND sender_id != ${currentUser} AND created_at < ${Date.now()} AND is_read IS DISTINCT FROM TRUE RETURNING id, sender_id`);
+export const readMessages = async (chatId, currentUser, time) => {
+    const maxCreatedAt = time ?? Date.now();
+    const result = await pool.query(`UPDATE messages SET is_read = TRUE WHERE chat_id = ${chatId} AND sender_id != ${currentUser} AND created_at <= ${maxCreatedAt} AND is_read IS DISTINCT FROM TRUE RETURNING id, sender_id`);
     return result.rows;
 }
