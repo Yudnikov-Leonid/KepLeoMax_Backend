@@ -59,8 +59,9 @@ export const getPostsByUserId = async (req, res) => {
     }
     const limit = req.query.limit ?? 999;
     const offset = req.query.offset ?? 0;
+    const beforeTime = req.query.before_time ?? Date.now();
 
-    let posts = await postsModel.getPostsByUserId(userId, limit, offset);
+    let posts = await postsModel.getPostsByUserId(userId, limit, offset, beforeTime);
     const user = convertUserToSend(await usersModel.getUserById(userId), req);
     posts.forEach(post => {
         post.user = user;
@@ -72,8 +73,9 @@ export const getPostsByUserId = async (req, res) => {
 export const getPosts = async (req, res) => {
     const limit = req.query.limit ?? 999;
     const offset = req.query.offset ?? 0;
+    const beforeTime = req.query.before_time ?? Date.now();
 
-    let posts = await postsModel.getPostsWithLimit(limit, offset);
+    let posts = await postsModel.getPostsWithLimit(limit, offset, beforeTime);
     const usersMap = new Map();
     for(let i = 0; i < posts.length; i++){
         const userId = posts[i].user_id;

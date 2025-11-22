@@ -3,6 +3,7 @@ import * as usersModel from '../models/usersModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 import * as messagesModel from '../models/messagesModel.js'
 
+// TODO refactor
 export const getChat = async (req, res) => {
     const userId = req.userId;
     const chatId = req.query.chatId;
@@ -13,8 +14,9 @@ export const getChat = async (req, res) => {
     if (!chat) {
         return res.status(404).json({ message: `chat with id ${chatId} not found` });
     }
+    console.log(`getChat, userId: ${userId}, user_ids: ${chat.user_ids}`);
     if (!chat.user_ids.includes(userId)) {
-        return res.status(403).json({ message: `can't get someone else's chat` });
+        return res.status(403).json({ message: `can't get alien chat` });
     }
 
     const otherUserId = chat.user_ids.filter(id => id != userId)[0];
@@ -23,10 +25,10 @@ export const getChat = async (req, res) => {
     chat.other_user = convertUserToSend(user, req);
     const lastMessage = (await messagesModel.getAllMessagesByChatId(chat.id, 1, 0))[0];
     if (lastMessage) {
-        const isCurrentUser = lastMessage.sender_id === userId;
-        lastMessage.is_current_user = isCurrentUser;
+        const user = await usersModel.getUserById(lastMessage.sender_id);
+        lastMessage.user = convertUserToSend(user, req);
         chat.last_message = lastMessage;
-        if (isCurrentUser) {
+        if (lastMessage.sender_id === userId) {
             chat.unread_count = 0;
         } else {
             const unreadMessages = await messagesModel.getUnreadMessages(chat.id);
@@ -50,10 +52,10 @@ export const getChats = async (req, res) => {
         chats[i].other_user = convertUserToSend(user, req);
         const lastMessage = (await messagesModel.getAllMessagesByChatId(chats[i].id, 1, 0))[0];
         if (lastMessage) {
-            const isCurrentUser = lastMessage.sender_id === userId;
-            lastMessage.is_current_user = isCurrentUser;
+            const user = await usersModel.getUserById(lastMessage.sender_id);
+            lastMessage.user = convertUserToSend(user, req);
             chats[i].last_message = lastMessage;
-            if (isCurrentUser) {
+            if (lastMessage.sender_id === userId) {
                 chats[i].unread_count = 0;
             } else {
                 const unreadMessages = await messagesModel.getUnreadMessages(chats[i].id);
@@ -64,7 +66,7 @@ export const getChats = async (req, res) => {
             chats[i].unread_count = 0;
         }
     }
-    //chats.sort((a, b) => (b.lastMessage?.created_at ?? 0) - (a.lastMessage?.created_at ?? 0));
+    chats.sort((a, b) => (b.last_message?.created_at ?? 0) - (a.last_message?.created_at ?? 0));
     return res.status(200).json({ data: chats });
 }
 

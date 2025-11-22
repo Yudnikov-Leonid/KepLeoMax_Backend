@@ -1,10 +1,12 @@
 import express from 'express';
-import { getUser, searchUsers, updateUser } from '../controllers/userController.js';
+import { addFCMToken, getUser, searchUsers, updateUser, deleteFCMToken } from '../controllers/userController.js';
 const router = express.Router();
 
 
 router.get('/', getUser);
-router.post('/edit', updateUser);
 router.get('/search', searchUsers);
+router.post('/edit', updateUser);
+router.post('/fcmToken', addFCMToken);
+router.delete('/fcmToken', deleteFCMToken);
 
 export default router;

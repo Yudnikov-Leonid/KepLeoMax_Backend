@@ -54,3 +54,7 @@ export const updateRefreshTokens = async (id, tokens) => {
 export const resetRefreshTokensByUserId = async (id) => {
     await pool.query("UPDATE users SET refresh_tokens = '{}' WHERE id = $1", [id])
 }
+
+export const updateFCMTokens = async (id, tokens) => {
+    const result = pool.query(`UPDATE users SET fcm_tokens = '{${tokens.map(token => `"${token}"`)}}' WHERE id = ${id}`);
+}
