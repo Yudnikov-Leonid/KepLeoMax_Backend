@@ -2,10 +2,10 @@ import express from 'express';
 import errorHandler from './middleware/error.js';
 import notFound from './middleware/notFound.js';
 import verifyJWT from './middleware/verifyJWT.js';
+import verifyWSJWT from './middleware/verifyWSJWT.js';
 import cookieParser from 'cookie-parser';
 import pool from './db.js';
 import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
 
 import router from './routes/router.js';
 import authRouter from './routes/auth.js';
@@ -15,12 +15,8 @@ import filesRouter from './routes/files.js';
 import postsRouter from './routes/posts.js';
 import messagesRouter from './routes/messages.js';
 import chatsRouter from './routes/chats.js';
+import webSocketRouter from './routes/websocket.js';
 
-import * as chatsModel from './models/chatsModel.js';
-import * as messagesModel from './models/messagesModel.js';
-import * as usersModel from './models/usersModel.js';
-import convertUserToSend from './utills/convertUser.js';
-import { sendNotification } from './services/notificationService.js';
 
 const PORT = process.env.PORT;
 
@@ -85,101 +81,6 @@ const expressServer = app.listen(PORT, '0.0.0.0', () => {
 /// websocet
 const io = new Server(expressServer);
 
-io.use((socket, next) => {
-    /// needs to sent an error to user
-    const authHeader = socket.handshake.auth?.token;
-    if (!authHeader) {
-        console.log('WebScoket: No token provided');
-        return next(new Error('Authentication error: No token provided.'));
-    }
-    console.log('connecting with token: ' + authHeader);
+io.use(verifyWSJWT);
 
-    if (!authHeader?.startsWith('Bearer ')) {
-        console.log('WebScoket: The token is incorrect');
-        return next(new Error('Authentication error: The token is invalid.'));
-    }
-    const token = authHeader.split(' ')[1];
-    try {
-        const decoded = jwt.verify(
-            token,
-            process.env.ACCESS_TOKEN_SECRET,
-        );
-        console.log(`decodedData: ${JSON.stringify(decoded)}`);
-        socket.userEmail = decoded.UserInfo.email;
-        socket.userId = decoded.UserInfo.id;
-        next();
-    } catch (e) {
-        console.log('error while verify jwt');
-        socket.disconnect();
-        next(new Error('Authentication error: Forbidden.')); // Invailid token
-    }
-});
-
-io.on('connection', socket => {
-    const userId = socket.userId;
-
-    console.log(`user ${socket.id} with id ${userId} connected`);
-
-    socket.join(userId.toString());
-
-    socket.on('message', async (data) => {
-        const otherUserId = data.recipient_id;
-        const message = data.message;
-        let chatId = await chatsModel.getChatId([userId, otherUserId]);
-        if (!chatId) {
-            console.log(`creating new chat between ${userId} and ${otherUserId}`);
-            chatId = await chatsModel.createNewChat([userId, otherUserId]);
-        }
-        console.log(`chat id: ${chatId}, userId: ${userId}, otherUserId: ${otherUserId}`);
-        const messageId = await messagesModel.createNewMessage(chatId, userId, message);
-        const newMessage = await messagesModel.getMessageById(messageId);
-
-        newMessage.is_current_user = true;
-        newMessage.other_user_id = otherUserId;
-        io.in(userId.toString()).emit('new_message', newMessage);
-        newMessage.is_current_user = false;
-        newMessage.other_user_id = Number(userId);
-        io.in(otherUserId.toString()).emit('new_message', newMessage);
-        console.log(`new message ${message} emitet to ${userId}, ${otherUserId}`);
-
-        // read messages
-        const readMessagesIds = await messagesModel.readMessages(chatId, userId);
-        if (readMessagesIds.length > 0) {
-            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
-        }
-
-        // send notification
-        const user = await usersModel.getUserById(userId);
-        const otherUser = await usersModel.getUserById(otherUserId);
-        sendNotification(otherUser, user.username, newMessage.message, { chat_id: chatId.toString(), type: 'new', ids: JSON.stringify([newMessage.id]) });
-    });
-
-    socket.on('read_all', async (data) => {
-        const chatId = data.chat_id;
-        const readMessagesIds = await messagesModel.readMessages(chatId, userId);
-        if (readMessagesIds.length > 0) {
-            const chat = await chatsModel.getChatById(chatId);
-            const otherUserId = chat.user_ids.filter(id => id != userId)[0];
-            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
-            // this logic was made locally on the client
-            // const user = await usersModel.getUserById(userId);
-            // sendNotification(user, 'clear', 'clear', { chat_id: chatId.toString(), type: 'cancel', ids: JSON.stringify(readMessagesIds.map(obj => obj.id)) });
-        }
-    });
-
-    socket.on('read_before_time', async (data) => {
-        const chatId = data.chat_id;
-        const readMessagesIds = await messagesModel.readMessages(chatId, userId, data.time);
-        if (readMessagesIds.length > 0) {
-            const chat = await chatsModel.getChatById(chatId);
-            const otherUserId = chat.user_ids.filter(id => id != userId)[0];
-            io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
-            // const user = await usersModel.getUserById(userId);
-            // sendNotification(user, 'clear', 'clear', { chat_id: chatId.toString(), type: 'cancel', ids: JSON.stringify(readMessagesIds.map(obj => obj.id)) });
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`user ${socket.id} with id ${userId} disconnected`);
-    });
-});
+io.on('connection', (socket) => webSocketRouter(io, socket));
