@@ -22,13 +22,18 @@ export const sendNotification = async (user, title, body, externalData) => {
             // },
             token: token,
         };
-        getMessaging()
-            .send(message)
-            .then((response) => {
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-            });
+        try {
+            getMessaging()
+                .send(message)
+                .then((response) => {
+                    console.log("Successfully sent message:", response);
+                })
+                .catch((error) => {
+                    console.log("Error sending message:", error);
+                });
+        } catch (e) {
+            console.log('failed to send notification to ' + token);
+        }
+
     });
 }

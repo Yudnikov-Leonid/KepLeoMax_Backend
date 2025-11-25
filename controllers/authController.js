@@ -4,7 +4,7 @@ import * as usersModel from '../models/usersModel.js'
 import * as profilesModel from '../models/profilesModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 
-const accessTokenExpireTime = '300s'
+const accessTokenExpireTime = '30s'
 const refreshTokenExpireTime = '1d'
 
 export const createNewUser = async (req, res) => {

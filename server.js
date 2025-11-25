@@ -89,10 +89,15 @@ io.use((socket, next) => {
     /// needs to sent an error to user
     const authHeader = socket.handshake.auth?.token;
     if (!authHeader) {
+        console.log('WebScoket: No token provided');
         return next(new Error('Authentication error: No token provided.'));
     }
+    console.log('connecting with token: ' + authHeader);
 
-    if (!authHeader?.startsWith('Bearer ')) return next(new Error('Authentication error: The token is invalid.'));
+    if (!authHeader?.startsWith('Bearer ')) {
+        console.log('WebScoket: The token is incorrect');
+        return next(new Error('Authentication error: The token is invalid.'));
+    }
     const token = authHeader.split(' ')[1];
     try {
         const decoded = jwt.verify(
@@ -104,6 +109,8 @@ io.use((socket, next) => {
         socket.userId = decoded.UserInfo.id;
         next();
     } catch (e) {
+        console.log('error while verify jwt');
+        socket.disconnect();
         next(new Error('Authentication error: Forbidden.')); // Invailid token
     }
 });
