@@ -8,8 +8,7 @@ const verifyJWT = (req, res, next) => {
         token,
         process.env.ACCESS_TOKEN_SECRET,
         (err, decoded) => {
-            if (err) return res.sendStatus(403); // Invailid token
-            req.userEmail = decoded.UserInfo.email;
+            if (err || !decoded.UserInfo.id || isNaN(decoded.UserInfo.id)) return res.sendStatus(403); // Invailid token
             req.userId = decoded.UserInfo.id;
             next();
         }

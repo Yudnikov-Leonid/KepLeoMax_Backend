@@ -21,7 +21,9 @@ const verifyWSJWT = (socket, next) => {
             process.env.ACCESS_TOKEN_SECRET,
         );
         console.log(`decodedData: ${JSON.stringify(decoded)}`);
-        socket.userEmail = decoded.UserInfo.email;
+        if (!decoded.UserInfo.id || isNaN(decoded.UserInfo.id)) {
+            throw 'The token doesn\'t contain userId';
+        }
         socket.userId = decoded.UserInfo.id;
         next();
     } catch (e) {

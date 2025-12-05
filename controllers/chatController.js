@@ -9,7 +9,10 @@ export const getChat = async (req, res) => {
     const chatId = req.query.chatId;
     if (!chatId) {
         return res.status(400).json({ message: 'chatId param is required' });
+    } else if (isNaN(chatId)) {
+        return res.status(400).json({ message: 'chatId must be int' });
     }
+
     const chat = await chatsModel.getChatById(chatId);
     if (!chat) {
         return res.status(404).json({ message: `chat with id ${chatId} not found` });
@@ -76,6 +79,8 @@ export const getChatWithUser = async (req, res) => {
     const otherUserId = req.query.userId;
     if (!otherUserId) {
         return res.status(400).json({ message: 'otherUserId param is required' });
+    } else if (isNaN(otherUserId)) {
+        return res.status(400).json({ message: 'otherUserId must be int' });
     }
 
     const chat = await chatsModel.getChatOfUsers([userId, otherUserId]);

@@ -2,17 +2,25 @@ import * as postsModel from '../models/postsModel.js';
 import * as usersModel from '../models/usersModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 
+const validateContentAndImages = (content, images, res) => {
+    if (content === undefined || !images) {
+        res.status(400).json({ message: 'content and images fields are required' });
+        return false;
+    } else if (!Array.isArray(images)) {
+        res.status(400).json({ message: 'images must be an array' });
+        return false;
+    }
+
+    return true;
+}
+
 export const createPost = async (req, res) => {
     const userId = req.userId;
 
-    const { content, images } = req.body;
-    if (content === undefined || !images) {
-        return res.status(400).json({ message: 'content and images fields are required' });
-    }
-    if (!Array.isArray(images)) {
-        // TODO validate array, that each value is 32 length
-        return res.status(400).json({ message: 'images must be an array' });
-    }
+    const content = req.body.content?.trim();
+    const images = req.body.images;
+    const isValid = validateContentAndImages(content, images, res);
+    if (!isValid) return;
 
     const postId = await postsModel.createNewPost(userId, content, images);
     const newPost = await postsModel.getPostById(postId);
@@ -23,18 +31,15 @@ export const createPost = async (req, res) => {
 
 export const updatePost = async (req, res) => {
     const userId = req.userId;
-    const postId = req.query.postId;
+    const postId = req.query.postId?.trim();
     if (!postId) {
         return res.status(400).json({ message: 'postId param is required' });
     }
-    const { content, images } = req.body;
-    if (content === undefined || !images) {
-        return res.status(400).json({ message: 'content and images fields are required' });
-    }
-    if (!Array.isArray(images)) {
-        // TODO validate array, that each value is 32 length
-        return res.status(400).json({ message: 'images must be an array' });
-    }
+
+    const content = req.body.content?.trim();
+    const images = req.body.images;
+    const isValid = validateContentAndImages(content, images, res);
+    if (!isValid) return;
 
     let post = await postsModel.getPostById(postId);
     if (!post) {
@@ -56,10 +61,20 @@ export const getPostsByUserId = async (req, res) => {
     const userId = req.query.userId;
     if (!userId) {
         return res.status(400).json({ message: 'userId param is required' });
+    } else if (isNaN(userId)) {
+        return res.status(400).json({ message: 'userId param must be int' });
     }
-    const limit = req.query.limit ?? 999;
-    const offset = req.query.offset ?? 0;
-    const beforeTime = req.query.before_time ?? Date.now();
+    const limit = req.query.limit?.trim() ?? 999;
+    const offset = req.query.offset?.trim() ?? 0;
+    const beforeTime = req.query.before_time?.trim() ?? Date.now();
+    if (isNaN(limit)) {
+        return res.status(400).json({ message: 'limit must be int' });
+    } else if (isNaN(offset)) {
+        return res.status(400).json({ message: 'offset must be int' });
+    } else if (isNaN(beforeTime)) {
+        return res.status(400).json({ message: 'beforeTime must be int' });
+    }
+
 
     let posts = await postsModel.getPostsByUserId(userId, limit, offset, beforeTime);
     const user = convertUserToSend(await usersModel.getUserById(userId), req);
@@ -71,13 +86,20 @@ export const getPostsByUserId = async (req, res) => {
 }
 
 export const getPosts = async (req, res) => {
-    const limit = req.query.limit ?? 999;
-    const offset = req.query.offset ?? 0;
-    const beforeTime = req.query.before_time ?? Date.now();
+    const limit = req.query.limit?.trim() ?? 999;
+    const offset = req.query.offset?.trim() ?? 0;
+    const beforeTime = req.query.before_time?.trim() ?? Date.now();
+    if (isNaN(limit)) {
+        return res.status(400).json({ message: 'limit must be int' });
+    } else if (isNaN(offset)) {
+        return res.status(400).json({ message: 'offset must be int' });
+    } else if (isNaN(beforeTime)) {
+        return res.status(400).json({ message: 'beforeTime must be int' });
+    }
 
     let posts = await postsModel.getPostsWithLimit(limit, offset, beforeTime);
     const usersMap = new Map();
-    for(let i = 0; i < posts.length; i++){
+    for (let i = 0; i < posts.length; i++) {
         const userId = posts[i].user_id;
         if (!usersMap.get(userId)) {
             const user = await usersModel.getUserById(userId);
@@ -95,6 +117,8 @@ export const deletePost = async (req, res) => {
     const postId = req.query.postId;
     if (!postId) {
         return res.status(400).json({ message: 'postId param is required' });
+    } else if (isNaN(postId)) {
+        return res.status(400).json({ message: 'postId must be int' });
     }
 
     const post = await postsModel.getPostById(postId);

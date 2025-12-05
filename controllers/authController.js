@@ -3,12 +3,30 @@ import jwt from 'jsonwebtoken';
 import * as usersModel from '../models/usersModel.js'
 import * as profilesModel from '../models/profilesModel.js';
 import convertUserToSend from '../utills/convertUser.js';
+import emailValidator from 'email-validator';
 
 const accessTokenExpireTime = '30s'
 const refreshTokenExpireTime = '1d'
 
+const validateEmailAndPassword = (email, password, res) => {
+    if (!email || !password) {
+        res.status(400).json({ message: 'email and password fields are required' });
+        return false;
+    } if (!emailValidator.validate(email)) {
+        res.status(400).json({ message: 'The email is incorrect' });
+        return false;
+    } if (password.length < 6) {
+        res.status(400).json({ message: 'The password length must be at least 6' });
+        return false;
+    }
+    return true;
+}
+
 export const createNewUser = async (req, res) => {
     const { email, password } = req.body;
+
+    const isValid = validateEmailAndPassword(email, password, res);
+    if (!isValid) return;
 
     // check duplicates
     if (await usersModel.haveDuplicateWithEmail(email)) {
@@ -29,6 +47,9 @@ export const createNewUser = async (req, res) => {
 
 export const login = async (req, res) => {
     const { email, password } = req.body;
+
+    const isValid = validateEmailAndPassword(email, password, res);
+    if (!isValid) return;
 
     const foundUser = await usersModel.getUserByEmail(email);
     if (!foundUser) {
@@ -60,22 +81,11 @@ export const login = async (req, res) => {
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
 
-        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, {userId: foundUser.id}) } });
+        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, { userId: foundUser.id }) } });
     } else {
         res.status(401).json({ message: 'Password is incorrect' });
     }
 }
-
-// const jwtVerify = (refreshToken) => new Promise((resolve, reject) => {
-//     jwt.verify(
-//         refreshToken,
-//         process.env.REFRESH_TOKEN_SECRET,
-//         async (err, decoded) => {
-//             if (err) reject(err);
-//             resolve(decoded);
-//         });
-// });
-
 
 export const refreshToken = async (req, res) => {
     const refreshToken = req.body?.refreshToken;

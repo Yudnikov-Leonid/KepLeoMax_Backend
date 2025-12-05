@@ -13,6 +13,7 @@ export const createUserProfile = async (userId) => {
     await pool.query('INSERT INTO profiles (user_id, description) VALUES ($1, $2)', [userId, '']);
 }
 
+/// provide the description to handle the case, if the profile doesn't exist
 export const editProfileByUserId = async (userId, description) => {
     try {
         return await updateProfile(userId, description);

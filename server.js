@@ -17,7 +17,6 @@ import messagesRouter from './routes/messages.js';
 import chatsRouter from './routes/chats.js';
 import webSocketRouter from './routes/websocket.js';
 
-
 const PORT = process.env.PORT;
 
 const app = express();
@@ -57,8 +56,6 @@ app.get('/setup', async (req, res) => {
     res.json({ message: 'tables created' });
 });
 
-// app.use(express.static(path.join(__dirname, 'uploads')))
-
 app.use('/api/files', filesRouter);
 
 app.use(verifyJWT);
@@ -73,7 +70,7 @@ app.use('/api/chats', chatsRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-// 192.168.0.106
+// 192.168.0.106 or 0.0.0.0 if runs with docker
 const expressServer = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`)
 });

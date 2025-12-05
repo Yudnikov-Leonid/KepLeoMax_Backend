@@ -2,9 +2,11 @@ import convertUserToSend from "../utills/convertUser.js";
 import * as usersModel from '../models/usersModel.js';
 
 export const getUser = async (req, res) => {
-    const userId = req.query.userId;
+    const userId = req.query.userId?.trim();
     if (!userId) {
         return res.status(400).json({ message: 'userId param is required' });
+    } else if (isNaN(userId)) {
+        return res.status(400).json({ message: 'userId must be int' });
     }
 
     const user = await usersModel.getUserById(userId);
@@ -16,7 +18,8 @@ export const getUser = async (req, res) => {
 }
 
 export const updateUser = async (req, res) => {
-    const { username, profileImage } = req.body;
+    const username = req.body.username?.trim();
+    const profileImage = req.body.profileImage?.trim();
     if (!username || !profileImage) {
         return res.status(400).json({ message: 'username and profileImage fields are required' });
     }
@@ -62,11 +65,16 @@ export const deleteFCMToken = async (req, res) => {
 export const searchUsers = async (req, res) => {
     const userId = req.userId;
     const search = req.query.search;
-    if (search == undefined) {
+    if (search === undefined) {
         return res.status(400).json({ message: 'search param is required' });
     }
-    const limit = req.query.limit ?? 10;
-    const offset = req.query.offset ?? 0;
+    const limit = req.query.limit?.trim() ?? 10;
+    const offset = req.query.offset?.trim() ?? 0;
+    if (isNaN(limit)) {
+        return res.status(400).json({ message: 'limit must be int' });
+    } else if (isNaN(offset)) {
+        return res.status(400).json({ message: 'offset must be int' });
+    }
 
     const users = await usersModel.searchUsers(search, limit, offset);
     const newUsersList = [];
