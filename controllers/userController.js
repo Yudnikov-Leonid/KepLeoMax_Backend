@@ -84,5 +84,5 @@ export const searchUsers = async (req, res) => {
         }
     });
 
-    res.status(200).json({ data: newUsersList });
+    res.status(200).json({ data: newUsersList, limit: limit, offset: offset });
 }

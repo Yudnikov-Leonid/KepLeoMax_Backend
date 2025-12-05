@@ -3,7 +3,7 @@ const convertUserToSend = (user, req) => {
 
     const isCurrent = req.userId === user.id;
 
-    return { id: user.id, email: user.email, username: user.username, profile_image: user.profile_image, is_current: isCurrent };
+    return { id: user.id, username: user.username, profile_image: user.profile_image, is_current: isCurrent };
     // fcm_tokens: isCurrent ? user.fcm_tokens : undefined
 };
 

@@ -82,7 +82,7 @@ export const getPostsByUserId = async (req, res) => {
         post.user = user;
     });
 
-    res.status(200).json({ data: posts ?? [] });
+    res.status(200).json({ data: posts ?? [], limit: limit, offset: offset, before_time: beforeTime });
 }
 
 export const getPosts = async (req, res) => {
@@ -109,7 +109,7 @@ export const getPosts = async (req, res) => {
     }
 
 
-    res.status(200).json({ data: posts ?? [] });
+    res.status(200).json({ data: posts ?? [], limit: limit, offset: offset, before_time: beforeTime });
 }
 
 export const deletePost = async (req, res) => {
