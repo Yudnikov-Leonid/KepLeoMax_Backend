@@ -3,15 +3,16 @@ import jwt from 'jsonwebtoken';
 const verifyWSJWT = (socket, next) => {
     /// needs to sent an error to user
     const authHeader = socket.handshake.auth?.token;
+    console.log(`auth: ${JSON.stringify(socket.handshake.auth)}`);
     if (!authHeader) {
-        console.log('WebScoket: No token provided');
-        return next(new Error('Authentication error: No token provided.'));
+        console.log('WebSocket: No token provided');
+        return next();
     }
     console.log('connecting with token: ' + authHeader);
 
     if (!authHeader?.startsWith('Bearer ')) {
-        console.log('WebScoket: The token is incorrect');
-        return next(new Error('Authentication error: The token is invalid.'));
+        console.log('WebSocket: The token is incorrect');
+        return next();
     }
     const token = authHeader.split(' ')[1];
     try {
@@ -24,9 +25,9 @@ const verifyWSJWT = (socket, next) => {
         socket.userId = decoded.UserInfo.id;
         next();
     } catch (e) {
-        console.log('error while verify jwt');
-        socket.disconnect();
-        next(new Error('Authentication error: Forbidden.')); // Invailid token
+        // Invailid token
+        console.log('error while verify jwt: ' + e);
+        next();
     }
 };
 

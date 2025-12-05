@@ -3,12 +3,18 @@ import { onMessage, onMessageToAi, onReadAll, onReadBeforeTime } from '../servic
 const webSocket = (io, socket) => {
     const userId = socket.userId;
 
+    if (!userId) {
+        socket.emit('auth_error', 401);
+        socket.disconnect();
+        return;
+    }
+
     console.log(`user ${socket.id} with id ${userId} connected`);
 
     socket.join(userId.toString());
 
-    socket.on('message', async (data) => { 
-        onMessage(io, data, userId); 
+    socket.on('message', async (data) => {
+        onMessage(io, data, userId);
 
         if (data.recipient_id == process.env.CHAT_BOT_ID) {
             onMessageToAi(io, data, userId);

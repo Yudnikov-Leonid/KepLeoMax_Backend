@@ -7,7 +7,6 @@ export const ask = async (message, messages) => {
             role: msg.sender_id == process.env.CHAT_BOT_ID ? 'assistant' : 'user',
             content: msg.message,
         }));
-        console.log(`history: ${JSON.stringify(history)}`);
 
         const chatCompletion = await openAi.chat.completions.create({
             model: "gpt-4o-mini",
@@ -15,8 +14,6 @@ export const ask = async (message, messages) => {
                 ...history, { role: 'user', content: message }
             ],
         });
-
-        console.log('answer from ai: ' + chatCompletion.choices[0].message.content);
 
         return chatCompletion.choices[0].message.content;
     } catch (e) {
