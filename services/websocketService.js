@@ -81,5 +81,5 @@ export const onMessage = async (io, data, userId) => {
     // send notification
     const user = await usersModel.getUserById(userId);
     const otherUser = await usersModel.getUserById(otherUserId);
-    sendNotification(otherUser, user.username, newMessage.message, { chat_id: chatId.toString(), type: 'new', ids: JSON.stringify([newMessage.id]) });
+    sendNotification(otherUser.id, user.username, newMessage.message, { chat_id: chatId.toString(), type: 'new', ids: JSON.stringify([newMessage.id]) });
 }

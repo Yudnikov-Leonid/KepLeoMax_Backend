@@ -1,5 +1,6 @@
 import convertUserToSend from "../utills/convertUser.js";
 import * as usersModel from '../models/usersModel.js';
+import * as fcmModel from '../models/fcmModel.js';
 
 export const getUser = async (req, res) => {
     const userId = req.query.userId?.trim();
@@ -30,38 +31,6 @@ export const updateUser = async (req, res) => {
     res.status(200).json({ data: convertUserToSend(newUser, req) });
 }
 
-export const addFCMToken = async (req, res) => {
-    const userId = req.userId;
-    const token = req.body.token;
-    if (!token) {
-        return res.status(400).json({ message: 'token field is required' });
-    }
-
-    const user = await usersModel.getUserById(userId);
-    if (!user.fcm_tokens) {
-        user.fcm_tokens = [token];
-    } else {
-        user.fcm_tokens.push(token);
-    }
-    await usersModel.updateFCMTokens(userId, user.fcm_tokens);
-
-    res.status(200).json({ data: convertUserToSend(user, req) });
-}
-
-export const deleteFCMToken = async (req, res) => {
-    const userId = req.userId;
-    const token = req.body.token;
-    if (!token) {
-        return res.status(400).json({ message: 'token field is required' });
-    }
-
-    const user = await usersModel.getUserById(userId);
-    user.fcm_tokens = user.fcm_tokens.filter((el) => el !== token);
-    await usersModel.updateFCMTokens(userId, user.fcm_tokens);
-
-    res.status(200).json({ data: convertUserToSend(user, req) });
-}
-
 export const searchUsers = async (req, res) => {
     const userId = req.userId;
     const search = req.query.search;
@@ -85,4 +54,27 @@ export const searchUsers = async (req, res) => {
     });
 
     res.status(200).json({ data: newUsersList, limit: limit, offset: offset });
+}
+
+export const addFCMToken = async (req, res) => {
+    const userId = req.userId;
+    const token = req.body.token?.trim();
+    if (!token) {
+        return res.status(400).json({ message: 'token field is required' });
+    }
+
+    await fcmModel.addFCMToken(userId, token);
+
+    res.sendStatus(200);
+}
+
+export const deleteFCMToken = async (req, res) => {
+    const token = req.body.token?.trim();
+    if (!token) {
+        return res.status(400).json({ message: 'token field is required' });
+    }
+
+    await fcmModel.deleteFCMToken(token);
+
+    res.sendStatus(200);
 }

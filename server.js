@@ -52,7 +52,8 @@ app.get('/setup', async (req, res) => {
     // await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_ids INT[])');
     // await pool.query('CREATE TABLE messages (id SERIAL PRIMARY KEY, chat_id INT, sender_id INT, message VARCHAR(4000), is_read BOOLEAN DEFAULT FALSE, created_at BIGINT, edited_at BIGINT NULL DEFAULT NULL)');
 
-    await pool.query('ALTER TABLE users ADD fcm_tokens TEXT[]');
+    // await pool.query('ALTER TABLE users DROP COLUMN fcm_tokens');
+    // await pool.query('CREATE TABLE fcm_tokens (id SERIAL PRIMARY KEY, user_id INT, fcm_token TEXT UNIQUE)');
     res.json({ message: 'tables created' });
 });
 
