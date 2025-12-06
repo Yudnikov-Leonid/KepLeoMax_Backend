@@ -5,6 +5,8 @@ import url from 'url';
 import path from 'path';
 import multer from "multer";
 import verifyJWT from '../middleware/verifyJWT.js';
+import sharp from 'sharp';
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
@@ -27,20 +29,29 @@ router.post('/single', verifyJWT, upload.single('file'), (req, res) => {
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-router.get('/:fileName', (req, res) => {
+router.get('/:fileName', async (req, res) => {
     const fileName = req.params.fileName;
+    const w = req.query.w?.trim();
     if (!fileName) {
         res.status(400).json({ message: 'fileName param is required' });
     }
 
     const imagePath = path.join(__dirname, '..', 'uploads', fileName);
 
-    res.download(imagePath, (err) => {
+    if (w && !isNaN(w)) {
+        const buffer = await sharp(imagePath)
+            .resize(Number(w))
+            .withMetadata()
+            .toBuffer();
+        res.send(buffer);
+    } else {
+        res.download(imagePath, (err) => {
         if (err) {
             console.error('Error downloading image:', err);
             res.status(500).json({ message: `Error downloading image: ${err}` });
         }
     });
+    }
 });
 
 export default router;
