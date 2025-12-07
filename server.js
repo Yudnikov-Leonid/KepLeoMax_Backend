@@ -47,6 +47,11 @@ app.get('/setup', async (req, res) => {
     // await pool.query('CREATE TABLE fcm_tokens (id SERIAL PRIMARY KEY, user_id INT, fcm_token TEXT UNIQUE)');
     // await pool.query('CREATE TABLE refresh_tokens (id SERIAL PRIMARY KEY, user_id INT NOT NULL, token TEXT UNIQUE NOT NULL)');
 
+    // await pool.query('CREATE INDEX users_email_index ON users (email)');
+    // await pool.query('CREATE INDEX posts_user_id_index ON posts (user_id)');
+    // await pool.query('CREATE INDEX chats_user_id_index ON chats (user_id)');
+    // await pool.query('CREATE INDEX messages_chat_id_index ON messages (chat_id)');
+
     return res.json({ message: 'tables created' });
 });
 
