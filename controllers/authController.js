@@ -105,7 +105,7 @@ export const refreshToken = async (req, res) => {
                 if (!hackedUser) return;
                 await usersModel.resetRefreshTokensByUserId(hackedUser.id);
             });
-        return res.sendStatus(403);
+        return res.sendStatus(404);
     }
 
     // verify and refresh
@@ -113,7 +113,7 @@ export const refreshToken = async (req, res) => {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         async (err, decoded) => {
-            if (err || foundUser.email !== decoded.UserInfo.email) return res.sendStatus(403);
+            if (err || foundUser.id !== decoded.UserInfo.id) return res.sendStatus(403);
             const newAccessToken = jwt.sign(
                 {
                     "UserInfo": {
@@ -143,6 +143,7 @@ export const refreshToken = async (req, res) => {
 }
 
 export const logout = async (req, res) => {
+    const userId = req.userId;
     const refreshToken = req.body.refreshToken?.trim();
 
     // validations
@@ -152,10 +153,12 @@ export const logout = async (req, res) => {
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
         return res.sendStatus(204);
+    } else if (foundUser.id != userId) {
+        return res.sendStatus(403);
     }
 
     // delete token
-    await usersModel.delteRefreshToken(foundUser.id, refreshToken);
+    await usersModel.delteRefreshToken(refreshToken);
 
     return res.sendStatus(204);
 }

@@ -1,5 +1,18 @@
 import pool from "../db.js";
 
+// create, update
+const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
+export const createUser = async (email, hashedPassword) => {
+    const result = await pool.query("INSERT INTO users (username, email, password, profile_image, refresh_tokens) VALUES ($1, $2, $3, '', '{}') RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
+    return result.rows[0].id;
+}
+
+export const updateUser = async (id, username, profileImage, updateImage) => {
+    const result = await pool.query(`UPDATE users SET username = $1${!updateImage ? '' : ', profile_image = $3'} WHERE id = $2 RETURNING *`, !updateImage ? [username, id] : [username, id, profileImage]);
+    return result.rows[0];
+}
+
+// read
 export const getUserByEmail = async (email) => {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) {
@@ -32,23 +45,13 @@ export const getUserByRefreshToken = async (refreshToken) => {
     }
 }
 
-const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
-export const createUser = async (email, hashedPassword) => {
-    const result = await pool.query("INSERT INTO users (username, email, password, profile_image, refresh_tokens) VALUES ($1, $2, $3, '', '{}') RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
-    return result.rows[0].id;
-}
-
+// check
 export const haveDuplicateWithEmail = async (email) => {
-    const duplicates = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    // TODO make the check in query
+    const duplicates = await pool.query('SELECT * FROM users WHERE email = $1 LIMIT 1 OFFSET 0', [email]);
     return duplicates.rows.length !== 0;
 }
 
-export const updateUser = async (id, username, profileImage) => {
-    const result = await pool.query('UPDATE users SET username = $1, profile_image = $2 WHERE id = $3 RETURNING *', [username, profileImage, id]);
-    return result.rows[0];
-}
-
+// refresh token
 export const addRefreshToken = async (userId, token) => {
     await pool.query('INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)', [userId, token]);
 }

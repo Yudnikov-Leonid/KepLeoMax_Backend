@@ -6,16 +6,19 @@ export const editProfile = async (req, res) => {
     const userId = req.userId;
     const username = req.body.username?.trim();
     const description = req.body.description?.trim();
-    const profileImage = req.body.profileImage?.trim();
+    const profileImage = req.body.profile_image?.trim();
+    const updateImage = req.body.update_image;
 
     // validations
-    if (!username) {
-        return res.status(400).json({ message: 'the username field is required' });
+    if (!username || updateImage === undefined) {
+        return res.status(400).json({ message: 'username and update_image fields are required' });
+    } else if (updateImage !== false && updateImage !== true) {
+        return res.status(400).json({ message: 'update_image field must be boolean' });
     }
 
     // update profile
     const updatedProfile = await profilesModel.editProfileByUserId(userId, description ?? '');
-    const updateUser = await usersModel.updateUser(userId, username, profileImage ?? '');
+    const updateUser = await usersModel.updateUser(userId, username, profileImage, updateImage);
     updatedProfile.user = convertUserToSend(updateUser, req);
 
     res.status(200).json({ data: updatedProfile });

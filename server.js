@@ -36,31 +36,17 @@ app.use(cookieParser());
 app.use('/api/auth', authRouter);
 
 app.get('/setup', async (req, res) => {
-    // await pool.query('DROP DATABASE IF EXISTS KLM_db');
-    // await pool.query('DROP TABLE IF EXISTS users');
-    // await pool.query('DROP TABLE IF EXISTS profiles');
-    // await pool.query('DROP TABLE IF EXISTS posts');
-
     // await pool.query('CREATE DATABASE KLM_db;');
-    // await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50), email VARCHAR(100), password VARCHAR(100), profile_image VARCHAR(32), refresh_tokens TEXT[])');
-    // await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT, description VARCHAR(200))');
-    // await pool.query('CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT, content VARCHAR(4000), images VARCHAR(32)[], users_who_liked_ids INT[], created_at BIGINT, edited_at BIGINT NULL)');
+    // await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50) NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, profile_image VARCHAR(32))');
+    // await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT UNIQUE NOT NULL, description VARCHAR(200) NOT NULL)');
+    // await pool.query('CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT NOT NULL, content VARCHAR(4000) NOT NULL, images VARCHAR(32)[] NOT NULL, users_who_liked_ids INT[], created_at BIGINT NOT NULL, edited_at BIGINT)');
 
-    // await pool.query('DROP TABLE IF EXISTS chats');
-    // await pool.query('DROP TABLE IF EXISTS messages');
-
-    // await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_ids INT[])');
-    // await pool.query('CREATE TABLE messages (id SERIAL PRIMARY KEY, chat_id INT, sender_id INT, message VARCHAR(4000), is_read BOOLEAN DEFAULT FALSE, created_at BIGINT, edited_at BIGINT NULL DEFAULT NULL)');
-
-    // await pool.query('ALTER TABLE users DROP COLUMN fcm_tokens');
-    // await pool.query('CREATE TABLE fcm_tokens (id SERIAL PRIMARY KEY, user_id INT, fcm_token TEXT UNIQUE)');
-
-    // await pool.query('DELETE FROM messages');
-    // await pool.query('DROP TABLE chats');
     // await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_id INT NOT NULL, chat_id SERIAL NOT NULL)');
+    // await pool.query('CREATE TABLE messages (id SERIAL PRIMARY KEY, chat_id INT NOT NULL, sender_id INT NOT NULL, message VARCHAR(4000) NOT NULL, is_read BOOLEAN DEFAULT FALSE NOT NULL, created_at BIGINT NOT NULL, edited_at BIGINT)');
 
-    // await pool.query('ALTER TABLE users DROP COLUMN refresh_tokens');
+    // await pool.query('CREATE TABLE fcm_tokens (id SERIAL PRIMARY KEY, user_id INT, fcm_token TEXT UNIQUE)');
     // await pool.query('CREATE TABLE refresh_tokens (id SERIAL PRIMARY KEY, user_id INT NOT NULL, token TEXT UNIQUE NOT NULL)');
+
     return res.json({ message: 'tables created' });
 });
 

@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get('/', getUser);
 router.get('/search', searchUsers);
-router.post('/edit', updateUser);
+//router.post('/edit', updateUser);
 router.post('/fcmToken', addFCMToken);
 router.delete('/fcmToken', deleteFCMToken);
 

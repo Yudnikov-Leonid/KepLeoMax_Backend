@@ -26,7 +26,7 @@ const verifyWSJWT = (socket, next) => {
         next();
     } catch (e) {
         // Invailid token
-        console.log('error while verify jwt: ' + e);
+        console.log('WS error while verify jwt: ' + e);
         next();
     }
 };

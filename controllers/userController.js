@@ -26,8 +26,8 @@ export const updateUser = async (req, res) => {
     const profileImage = req.body.profileImage?.trim();
 
     // validations
-    if (!username || !profileImage) {
-        return res.status(400).json({ message: 'username and profileImage fields are required' });
+    if (!username) {
+        return res.status(400).json({ message: 'username field is required' });
     }
 
     // update user
