@@ -79,7 +79,7 @@ export const login = async (req, res) => {
             { expiresIn: refreshTokenExpireTime }
         );
 
-        await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
+        await usersModel.addRefreshToken(foundUser.id, refreshToken);
 
         return res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, { userId: foundUser.id }) } });
     } else {
@@ -154,9 +154,8 @@ export const logout = async (req, res) => {
         return res.sendStatus(204);
     }
 
-    // remove tokens
-    const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken)];
-    await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
+    // delete token
+    await usersModel.delteRefreshToken(foundUser.id, refreshToken);
 
     return res.sendStatus(204);
 }

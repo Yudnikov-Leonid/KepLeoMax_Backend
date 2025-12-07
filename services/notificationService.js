@@ -23,12 +23,14 @@ export const sendNotification = async (userId, title, body, externalData) => {
         getMessaging()
             .send(message)
             .then((response) => {
-                console.log("Successfully sent message:", response, 'token:', token);
+                console.log("Successfully sent message:", response);
             })
             .catch((error) => {
-                console.log("Error sending message:", error);
                 if (error.errorCode == "messaging/registration-token-not-registered") {
+                    console.log("Error sending message, token-not-registered:", token);
                     fcmModel.deleteFCMToken(token);
+                } else {
+                    console.log("Error sending message:", error);
                 }
             });
     });

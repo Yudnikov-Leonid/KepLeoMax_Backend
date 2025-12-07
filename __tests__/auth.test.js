@@ -113,7 +113,7 @@ describe('auth tests', () => {
         expect(mockResponse.json).toHaveBeenLastCalledWith({ accessToken: 'token_300s', refreshToken: 'token_1d' });
         expect(jwt.sign.mock.calls[0]).toEqual([{ UserInfo: { id: 10, email: 'email@cool.com' } }, undefined, { expiresIn: '300s' }]); // undefined - secrets from .env
         expect(jwt.sign.mock.calls[1]).toEqual([{ UserInfo: { id: 10, email: 'email@cool.com' } }, undefined, { expiresIn: '1d' }]);
-        expect(usersModel.updateRefreshTokens).toHaveBeenCalledWith(10, ['first_token', 'token_1d']);
+        expect(usersModel.addRefreshToken).toHaveBeenCalledWith(10, ['first_token', 'token_1d']);
     });
 
     it('refresh', async () => {
@@ -184,7 +184,7 @@ describe('auth tests', () => {
         expect(mockResponse.json).toHaveBeenLastCalledWith({
             accessToken: 'token_300s', refreshToken: 'token_1d',
         });
-        expect(usersModel.updateRefreshTokens).toHaveBeenLastCalledWith(['first_token', 'token_1d']);
+        expect(usersModel.addRefreshToken).toHaveBeenLastCalledWith(['first_token', 'token_1d']);
         expect(jwt.verify).toHaveBeenCalledWith(token, undefined, expect.anything());
     });
 });

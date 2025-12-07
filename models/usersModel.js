@@ -24,7 +24,7 @@ export const searchUsers = async (search, limit, offset) => {
 }
 
 export const getUserByRefreshToken = async (refreshToken) => {
-    const result = await pool.query('SELECT * FROM users WHERE $1 = ANY(refresh_tokens)', [refreshToken]);
+    const result = await pool.query('SELECT * FROM users WHERE id = (SELECT user_id FROM refresh_tokens WHERE token = $1 LIMIT 1 OFFSET 0)', [refreshToken]);
     if (result.rows.length === 0) {
         return null;
     } else {
@@ -45,14 +45,18 @@ export const haveDuplicateWithEmail = async (email) => {
 }
 
 export const updateUser = async (id, username, profileImage) => {
-    const result = await pool.query(`UPDATE users SET username = $1, profile_image = $2 WHERE id = $3 RETURNING *`, [username, profileImage, id]);
+    const result = await pool.query('UPDATE users SET username = $1, profile_image = $2 WHERE id = $3 RETURNING *', [username, profileImage, id]);
     return result.rows[0];
 }
 
-export const updateRefreshTokens = async (id, tokens) => {
-    await pool.query(`UPDATE users SET refresh_tokens = $1 WHERE id = $2`, [JSON.stringify(tokens), id]);
+export const addRefreshToken = async (userId, token) => {
+    await pool.query('INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)', [userId, token]);
 }
 
-export const resetRefreshTokensByUserId = async (id) => {
-    await pool.query("UPDATE users SET refresh_tokens = '{}' WHERE id = $1", [id])
+export const delteRefreshToken = async (token) => {
+    await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [token]);
+}
+
+export const resetRefreshTokensByUserId = async (userId) => {
+    await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
 }

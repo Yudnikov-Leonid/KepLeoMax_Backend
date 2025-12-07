@@ -5,7 +5,7 @@ export const addFCMToken = async (userId, token) => {
 }
 
 export const deleteFCMToken = async (token) => {
-    await pool.query('DELETE FROM fcm_tokens WHERE fcm_token = \'$1\'', [token]);
+    await pool.query('DELETE FROM fcm_tokens WHERE fcm_token = $1', [token]);
 }
 
 export const getAllTokensByUserId = async (userId) => {
