@@ -16,31 +16,34 @@ const validateContentAndImages = (content, images, res) => {
 
 export const createPost = async (req, res) => {
     const userId = req.userId;
-
     const content = req.body.content?.trim();
     const images = req.body.images;
+
+    // validations
     const isValid = validateContentAndImages(content, images, res);
     if (!isValid) return;
 
-    const postId = await postsModel.createNewPost(userId, content, images);
-    const newPost = await postsModel.getPostById(postId);
-    const user = await usersModel.getUserById(userId);
-    newPost.user = convertUserToSend(user, req);
+    // create post
+    const newPost = await postsModel.createNewPost(userId, content, images);
+    newPost.user = convertUserToSend(await usersModel.getUserById(userId), req);
+
     res.status(201).json({ data: newPost });
 }
 
 export const updatePost = async (req, res) => {
     const userId = req.userId;
     const postId = req.query.postId?.trim();
+    const content = req.body.content?.trim();
+    const images = req.body.images;
+
+    // validations
     if (!postId) {
         return res.status(400).json({ message: 'postId param is required' });
     }
-
-    const content = req.body.content?.trim();
-    const images = req.body.images;
     const isValid = validateContentAndImages(content, images, res);
     if (!isValid) return;
 
+    // get post and validate
     let post = await postsModel.getPostById(postId);
     if (!post) {
         return res.status(404).json({ message: `Post with id ${postId} not found` });
@@ -49,25 +52,25 @@ export const updatePost = async (req, res) => {
         return res.sendStatus(403);
     }
 
-    await postsModel.updatePost(postId, content, images);
+    // update post
+    post = await postsModel.updatePost(postId, content, images);
+    post.user = convertUserToSend(await usersModel.getUserById(userId), req);
 
-    post = await postsModel.getPostById(postId);
-    const user = await usersModel.getUserById(userId);
-    post.user = convertUserToSend(user, req);
     res.status(200).json({ data: post });
 }
 
 export const getPostsByUserId = async (req, res) => {
     const userId = req.query.userId;
+    const limit = req.query.limit?.trim() ?? 999;
+    const offset = req.query.offset?.trim() ?? 0;
+    const beforeTime = req.query.before_time?.trim() ?? Date.now();
+
+    // validations
     if (!userId) {
         return res.status(400).json({ message: 'userId param is required' });
     } else if (isNaN(userId)) {
         return res.status(400).json({ message: 'userId param must be int' });
-    }
-    const limit = req.query.limit?.trim() ?? 999;
-    const offset = req.query.offset?.trim() ?? 0;
-    const beforeTime = req.query.before_time?.trim() ?? Date.now();
-    if (isNaN(limit)) {
+    } else if (isNaN(limit)) {
         return res.status(400).json({ message: 'limit must be int' });
     } else if (isNaN(offset)) {
         return res.status(400).json({ message: 'offset must be int' });
@@ -75,7 +78,7 @@ export const getPostsByUserId = async (req, res) => {
         return res.status(400).json({ message: 'beforeTime must be int' });
     }
 
-
+    // get posts
     let posts = await postsModel.getPostsByUserId(userId, limit, offset, beforeTime);
     const user = convertUserToSend(await usersModel.getUserById(userId), req);
     posts.forEach(post => {
@@ -89,6 +92,8 @@ export const getPosts = async (req, res) => {
     const limit = req.query.limit?.trim() ?? 999;
     const offset = req.query.offset?.trim() ?? 0;
     const beforeTime = req.query.before_time?.trim() ?? Date.now();
+
+    // validations
     if (isNaN(limit)) {
         return res.status(400).json({ message: 'limit must be int' });
     } else if (isNaN(offset)) {
@@ -97,17 +102,17 @@ export const getPosts = async (req, res) => {
         return res.status(400).json({ message: 'beforeTime must be int' });
     }
 
+    // get posts
     let posts = await postsModel.getPostsWithLimit(limit, offset, beforeTime);
+    // set users
     const usersMap = new Map();
     for (let i = 0; i < posts.length; i++) {
         const userId = posts[i].user_id;
         if (!usersMap.get(userId)) {
-            const user = await usersModel.getUserById(userId);
-            usersMap.set(userId, convertUserToSend(user, req));
+            usersMap.set(userId, convertUserToSend(await usersModel.getUserById(userId), req));
         }
         posts[i].user = usersMap.get(userId);
     }
-
 
     res.status(200).json({ data: posts ?? [], limit: limit, offset: offset, before_time: beforeTime });
 }
@@ -115,23 +120,25 @@ export const getPosts = async (req, res) => {
 export const deletePost = async (req, res) => {
     const userId = req.userId;
     const postId = req.query.postId;
+
+    // validations
     if (!postId) {
         return res.status(400).json({ message: 'postId param is required' });
     } else if (isNaN(postId)) {
         return res.status(400).json({ message: 'postId must be int' });
     }
 
+    // get post and validate
     const post = await postsModel.getPostById(postId);
     if (!post) {
         return res.status(404).json({ message: `Post with id ${postId} not found` });
-    }
-    if (post.user_id != userId) {
+    } else if (post.user_id != userId) {
         return res.sendStatus(403);
     }
 
+    // delete post
     await postsModel.deletePostById(postId);
-
-    const user = await usersModel.getUserById(userId);
-    post.user = convertUserToSend(user, req);
+    
+    post.user = convertUserToSend(await usersModel.getUserById(userId), req);
     res.status(200).json({ data: post });
 }

@@ -54,6 +54,10 @@ app.get('/setup', async (req, res) => {
 
     // await pool.query('ALTER TABLE users DROP COLUMN fcm_tokens');
     // await pool.query('CREATE TABLE fcm_tokens (id SERIAL PRIMARY KEY, user_id INT, fcm_token TEXT UNIQUE)');
+
+    await pool.query('DELETE FROM messages');
+    await pool.query('DROP TABLE chats');
+    await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_id INT NOT NULL, chat_id SERIAL NOT NULL)');
     res.json({ message: 'tables created' });
 });
 

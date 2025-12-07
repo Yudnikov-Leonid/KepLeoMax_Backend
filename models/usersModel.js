@@ -19,7 +19,7 @@ export const getUserById = async (id) => {
 }
 
 export const searchUsers = async (search, limit, offset) => {
-    const result = await pool.query(`SELECT * FROM users WHERE (lower(username) LIKE lower('%${search}%')) ORDER BY email ASC LIMIT ${limit} OFFSET ${offset}`);
+    const result = await pool.query('SELECT * FROM users WHERE (lower(username) LIKE lower($1)) ORDER BY email ASC LIMIT $2 OFFSET $3', [`${search}%`, limit, offset]);
     return result.rows;
 }
 
@@ -40,15 +40,17 @@ export const createUser = async (email, hashedPassword) => {
 
 export const haveDuplicateWithEmail = async (email) => {
     const duplicates = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    // TODO make the check in query
     return duplicates.rows.length !== 0;
 }
 
 export const updateUser = async (id, username, profileImage) => {
-    await pool.query(`UPDATE users SET username = $1, profile_image = $2 WHERE id = $3`, [username, profileImage, id]);
+    const result = await pool.query(`UPDATE users SET username = $1, profile_image = $2 WHERE id = $3 RETURNING *`, [username, profileImage, id]);
+    return result.rows[0];
 }
 
 export const updateRefreshTokens = async (id, tokens) => {
-    await pool.query(`UPDATE users SET refresh_tokens = '{${tokens.map(token => `"${token}"`)}}' WHERE id = $1`, [id]);
+    await pool.query(`UPDATE users SET refresh_tokens = $1 WHERE id = $2`, [JSON.stringify(tokens), id]);
 }
 
 export const resetRefreshTokensByUserId = async (id) => {

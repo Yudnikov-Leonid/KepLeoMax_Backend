@@ -9,7 +9,6 @@ admin.initializeApp({
 export const sendNotification = async (userId, title, body, externalData) => {
     const tokens = await fcmModel.getAllTokensByUserId(userId);
     if (!tokens || tokens.length === 0) return;
-    tokens.push({user_id: 34343, fcm_token: 'gfdgfdg'});
 
     tokens.forEach((token) => {
         const message = {

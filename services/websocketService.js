@@ -8,8 +8,7 @@ export const onReadBeforeTime = async (io, data, userId) => {
     const chatId = data.chat_id;
     const readMessagesIds = await messagesModel.readMessages(chatId, userId, data.time);
     if (readMessagesIds.length > 0) {
-        const chat = await chatsModel.getChatById(chatId);
-        const otherUserId = chat.user_ids.filter(id => id != userId)[0];
+        const otherUserId = await chatsModel.getOtherUserId(userId, chatId);
         io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
     }
 }
@@ -18,8 +17,7 @@ export const onReadAll = async (io, data, userId) => {
     const chatId = data.chat_id;
     const readMessagesIds = await messagesModel.readMessages(chatId, userId);
     if (readMessagesIds.length > 0) {
-        const chat = await chatsModel.getChatById(chatId);
-        const otherUserId = chat.user_ids.filter(id => id != userId)[0];
+        const otherUserId = await chatsModel.getOtherUserId(chatId);
         io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
     }
 }
@@ -55,10 +53,13 @@ export const onMessage = async (io, data, userId) => {
         return;
     }
 
-    let chatId = await chatsModel.getChatId([userId, otherUserId]);
-    if (!chatId) {
+    let chatId;
+    const chat = await chatsModel.getChatOfUsers([userId, otherUserId]);
+    if (!chat) {
         console.log(`creating new chat between ${userId} and ${otherUserId}`);
         chatId = await chatsModel.createNewChat([userId, otherUserId]);
+    } else {
+        chatId = chat.id;
     }
     console.log(`chat id: ${chatId}, userId: ${userId}, otherUserId: ${otherUserId}`);
     const messageId = await messagesModel.createNewMessage(chatId, userId, message);

@@ -23,8 +23,10 @@ const validateEmailAndPassword = (email, password, res) => {
 }
 
 export const createNewUser = async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim();
+    const password = req.body.password?.trim();
 
+    // validations
     const isValid = validateEmailAndPassword(email, password, res);
     if (!isValid) return;
 
@@ -33,36 +35,35 @@ export const createNewUser = async (req, res) => {
         return res.status(409).json({ message: `User with email ${email} is alredy exists` });
     }
 
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const userId = await usersModel.createUser(email, hashedPassword);
-        await profilesModel.createUserProfile(userId);
+    // create user
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = await usersModel.createUser(email, hashedPassword);
+    await profilesModel.createUserProfile(userId);
 
-        res.status(201).json({ success: `New user ${email} created` });
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({ message: err.message });
-    }
+    return res.status(201).json({ success: `New user with email ${email} created` });
 }
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim();
+    const password = req.body.password?.trim();
 
+    // validations
     const isValid = validateEmailAndPassword(email, password, res);
     if (!isValid) return;
 
+    // get user
     const foundUser = await usersModel.getUserByEmail(email);
     if (!foundUser) {
         return res.status(404).json({ message: `User with email ${email} not found` });
     }
 
+    // login
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
         const accessToken = jwt.sign(
             {
                 "UserInfo": {
                     "id": foundUser.id,
-                    "email": foundUser.email
                 }
             },
             process.env.ACCESS_TOKEN_SECRET,
@@ -72,7 +73,6 @@ export const login = async (req, res) => {
             {
                 "UserInfo": {
                     "id": foundUser.id,
-                    "email": foundUser.email
                 }
             },
             process.env.REFRESH_TOKEN_SECRET,
@@ -81,16 +81,19 @@ export const login = async (req, res) => {
 
         await usersModel.updateRefreshTokens(foundUser.id, [...foundUser.refresh_tokens, refreshToken]);
 
-        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, { userId: foundUser.id }) } });
+        return res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken, user: convertUserToSend(foundUser, { userId: foundUser.id }) } });
     } else {
-        res.status(401).json({ message: 'Password is incorrect' });
+        return res.status(401).json({ message: 'Password is incorrect' });
     }
 }
 
 export const refreshToken = async (req, res) => {
-    const refreshToken = req.body?.refreshToken;
+    const refreshToken = req.body.refreshToken?.trim();
+
+    // validations
     if (!refreshToken) return res.sendStatus(401);
 
+    // get user
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
         jwt.verify(
@@ -105,6 +108,7 @@ export const refreshToken = async (req, res) => {
         return res.sendStatus(403);
     }
 
+    // verify and refresh
     jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
@@ -114,7 +118,6 @@ export const refreshToken = async (req, res) => {
                 {
                     "UserInfo": {
                         "id": decoded.UserInfo.id,
-                        "email": decoded.UserInfo.email
                     }
                 },
                 process.env.ACCESS_TOKEN_SECRET,
@@ -125,7 +128,6 @@ export const refreshToken = async (req, res) => {
             //     {
             //         "UserInfo": {
             //             "id": decoded.UserInfo.id,
-            //             "email": decoded.UserInfo.email
             //         }
             //     },
             //     process.env.REFRESH_TOKEN_SECRET,
@@ -135,22 +137,26 @@ export const refreshToken = async (req, res) => {
             // const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken), newRefreshToken];
             // await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
 
-            res.status(200).json({ accessToken: newAccessToken });
+            return res.status(200).json({ accessToken: newAccessToken });
         }
     );
 }
 
 export const logout = async (req, res) => {
-    const refreshToken = req.body?.refreshToken;
+    const refreshToken = req.body.refreshToken?.trim();
+
+    // validations
     if (!refreshToken) return res.sendStatus(401);
 
+    // get user
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
         return res.sendStatus(204);
     }
 
+    // remove tokens
     const newRefreshTokens = [foundUser.refresh_tokens.filter(token => token !== refreshToken)];
     await usersModel.updateRefreshTokens(foundUser.id, newRefreshTokens);
 
-    res.sendStatus(204);
+    return res.sendStatus(204);
 }
