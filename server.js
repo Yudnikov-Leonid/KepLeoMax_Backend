@@ -35,7 +35,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRouter);
 
-app.get('/setup', async (req, res) => {
+app.post('/setup', async (req, res) => {
     if (req.body.key !== process.env.SETUP_KEY) {
         return res.sendStatus(403);
     }

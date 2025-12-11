@@ -3,7 +3,7 @@ import pool from "../db.js";
 // create, update
 const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
 export const createUser = async (email, hashedPassword) => {
-    const result = await pool.query("INSERT INTO users (username, email, password, profile_image, refresh_tokens) VALUES ($1, $2, $3, '', '{}') RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
+    const result = await pool.query("INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
     return result.rows[0].id;
 }
 
