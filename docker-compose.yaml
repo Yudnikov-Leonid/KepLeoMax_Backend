@@ -1,14 +1,18 @@
 services:
   KLM_db: 
     image: postgres
+    restart: always
     environment:
       POSTGRES_PASSWORD: KLM_3000
       POSTGRES_USER: KLMU
       POSTGRES_DB: KLM_db
   app:
     image: kepleomax-node-app
+    restart: always
     ports: 
       - 13000:3000
+    depends_on:
+      - KLM_db
     volumes:
       - meida:/usr/src/app/uploads
 

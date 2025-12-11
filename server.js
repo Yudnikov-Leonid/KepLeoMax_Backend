@@ -37,7 +37,7 @@ app.use('/api/auth', authRouter);
 
 app.get('/setup', async (req, res) => {
     if (req.body.key !== process.env.SETUP_KEY) {
-        return res.sendStatus(401);
+        return res.sendStatus(403);
     }
 
     await pool.query('CREATE DATABASE KLM_db;');
