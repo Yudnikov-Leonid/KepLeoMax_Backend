@@ -52,7 +52,7 @@ export const searchUsers = async (req, res) => {
     }
 
     // get users
-    const users = (await usersModel.searchUsers(search, limit, offset)).map(user => convertUserToSend(user, req));
+    const users = (await usersModel.searchUsers(search, userId, limit, offset)).map(user => convertUserToSend(user, req));
 
     res.status(200).json({ data: users, limit: limit, offset: offset });
 }
@@ -74,7 +74,7 @@ export const addFCMToken = async (req, res) => {
 
 export const deleteFCMToken = async (req, res) => {
     const token = req.body.token?.trim();
-    
+
     // validations
     if (!token) {
         return res.status(400).json({ message: 'token field is required' });
