@@ -19,6 +19,9 @@ export const sendNotification = async (userId, title, body, externalData) => {
                 body: body
             },
             token: token.fcm_token,
+            android: {
+                priority: 'high'
+            }
         };
         getMessaging()
             .send(message)
@@ -26,9 +29,9 @@ export const sendNotification = async (userId, title, body, externalData) => {
                 console.log("Successfully sent message:", response);
             })
             .catch((error) => {
-                if (error.errorCode == "messaging/registration-token-not-registered") {
+                if (error.errorInfo.code == "messaging/registration-token-not-registered") {
                     console.log("Error sending message, token-not-registered:", token);
-                    fcmModel.deleteFCMToken(token);
+                    fcmModel.deleteFCMToken(token.fcm_token);
                 } else {
                     console.log("Error sending message:", error);
                 }

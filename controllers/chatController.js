@@ -23,9 +23,9 @@ export const getChat = async (req, res) => {
     }
 
     // set other_user
-    const otherUser = await usersModel.getUserById(chat.user_ids.filter(id => id != userId)[0]);
+    const otherUser = convertUserToSend(await usersModel.getUserById(chat.user_ids.filter(id => id != userId)[0]), req);
     chat.user_ids = undefined;
-    chat.other_user = convertUserToSend(otherUser, req);
+    chat.other_user = otherUser;
 
     // set last_message
     const lastMessage = (await messagesModel.getAllMessagesByChatId(chat.id, 1, 0))[0];

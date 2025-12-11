@@ -15,12 +15,13 @@ export const getPostsByUserId = async (userId, limit, offset, beforeTime) => {
 }
 
 export const createNewPost = async (userId, content, images) => {
-    const result = await pool.query('INSERT INTO posts (user_id, content, images, created_at) VALUES ($1, $2, $3, $4) RETURNING *', [userId, content, JSON.stringify(images), Date.now()]);
+    const result = await pool.query('INSERT INTO posts (user_id, content, images, created_at) VALUES ($1, $2, $3, $4) RETURNING *', [userId, content, images, Date.now()]);
     return result.rows[0];
 }
 
 export const updatePost = async (postId, content, images) => {
-    await pool.query('UPDATE posts SET content = $1, images = $2, edited_at = $3 WHERE id = $4 RETURNING *', [content, JSON.stringify(images), Date.now(), postId]);
+   const result = await pool.query('UPDATE posts SET content = $1, images = $2, edited_at = $3 WHERE id = $4 RETURNING *', [content, images, Date.now(), postId]);
+   return result.rows[0];
 }
 
 export const getPostsWithLimit = async (limit, offset, beforeTime) => {

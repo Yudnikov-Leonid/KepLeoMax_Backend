@@ -32,7 +32,7 @@ export const getUserById = async (id) => {
 }
 
 export const searchUsers = async (search, limit, offset) => {
-    const result = await pool.query('SELECT * FROM users WHERE (lower(username) LIKE lower($1)) ORDER BY email ASC LIMIT $2 OFFSET $3', [`${search}%`, limit, offset]);
+    const result = await pool.query('SELECT * FROM users WHERE (lower(username) LIKE lower($1)) ORDER BY email ASC LIMIT $2 OFFSET $3', [`%${search}%`, limit, offset]);
     return result.rows;
 }
 

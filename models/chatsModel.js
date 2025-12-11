@@ -40,7 +40,10 @@ export const getOtherUserId = async (userId, chatId) => {
 export const getAllChatsByUserId = async (userId) => {
     const result = await pool.query('SELECT t1.*, t2.user_id as other_user_id FROM (SELECT * FROM chats WHERE user_id = $1) AS t1 INNER JOIN chats AS t2 ON t1.chat_id = t2.chat_id', [userId]);
     // do it in query?
-    result.rows.forEach(row => row.id = row.chat_id);
+    result.rows.forEach(row => {
+        row.id = row.chat_id;
+        row.chat_id = undefined;
+    });
     return result.rows.filter(row => row.other_user_id != userId);
 }
 
