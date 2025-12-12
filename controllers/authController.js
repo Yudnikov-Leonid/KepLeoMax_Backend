@@ -5,8 +5,8 @@ import * as profilesModel from '../models/profilesModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 import emailValidator from 'email-validator';
 
-const accessTokenExpireTime = '30s'
-const refreshTokenExpireTime = '30s'
+const accessTokenExpireTime = '1200s'
+const refreshTokenExpireTime = '365d'
 
 const validateEmailAndPassword = (email, password, res) => {
     if (!email || !password) {
