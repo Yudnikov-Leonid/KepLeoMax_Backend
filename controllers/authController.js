@@ -5,8 +5,8 @@ import * as profilesModel from '../models/profilesModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 import emailValidator from 'email-validator';
 
-const accessTokenExpireTime = '1200s'
-const refreshTokenExpireTime = '365d'
+const accessTokenExpireTime = '30s'
+const refreshTokenExpireTime = '30s'
 
 const validateEmailAndPassword = (email, password, res) => {
     if (!email || !password) {
@@ -143,7 +143,6 @@ export const refreshToken = async (req, res) => {
 }
 
 export const logout = async (req, res) => {
-    const userId = req.userId;
     const refreshToken = req.body.refreshToken?.trim();
 
     // validations
@@ -153,8 +152,6 @@ export const logout = async (req, res) => {
     const foundUser = await usersModel.getUserByRefreshToken(refreshToken);
     if (!foundUser) {
         return res.sendStatus(204);
-    } else if (foundUser.id != userId) {
-        return res.sendStatus(403);
     }
 
     // delete token

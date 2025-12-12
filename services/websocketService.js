@@ -17,7 +17,7 @@ export const onReadAll = async (io, data, userId) => {
     const chatId = data.chat_id;
     const readMessagesIds = await messagesModel.readMessages(chatId, userId);
     if (readMessagesIds.length > 0) {
-        const otherUserId = await chatsModel.getOtherUserId(chatId);
+        const otherUserId = await chatsModel.getOtherUserId(userId, chatId);
         io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
     }
 }
