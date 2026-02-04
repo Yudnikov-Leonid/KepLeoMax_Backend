@@ -6,20 +6,28 @@ import { ask } from './aiService.js';
 
 export const onReadBeforeTime = async (io, data, userId) => {
     const chatId = data.chat_id;
-    const readMessagesIds = await messagesModel.readMessages(chatId, userId, data.time);
-    if (readMessagesIds.length > 0) {
+    const readMessages = await messagesModel.readMessages(chatId, userId, data.time);
+    if (readMessages.length > 0) {
         const otherUserId = await chatsModel.getOtherUserId(userId, chatId);
-        io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
+        // TODO dry
+        io.in([userId.toString()]).emit('read_messages', {
+            chat_id: chatId,
+            sender_id: readMessages[0].sender_id,
+            is_current_user: readMessages[0].sender_id == userId,
+            messages_ids: readMessages.map(obj => obj.id),
+        });
+        io.in([otherUserId.toString()]).emit('read_messages', {
+            chat_id: chatId,
+            sender_id: readMessages[0].sender_id,
+            is_current_user: readMessages[0].sender_id == otherUserId,
+            messages_ids: readMessages.map(obj => obj.id),
+        });
     }
 }
 
 export const onReadAll = async (io, data, userId) => {
-    const chatId = data.chat_id;
-    const readMessagesIds = await messagesModel.readMessages(chatId, userId);
-    if (readMessagesIds.length > 0) {
-        const otherUserId = await chatsModel.getOtherUserId(userId, chatId);
-        io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
-    }
+    data.time = null;
+    await onReadBeforeTime(io, data, userId);
 }
 
 export const onMessageToAi = async (io, data, userId) => {
@@ -74,13 +82,29 @@ export const onMessage = async (io, data, userId) => {
     console.log(`new message ${message} emitet to ${userId}, ${otherUserId}`);
 
     // read messages
-    const readMessagesIds = await messagesModel.readMessages(chatId, userId);
-    if (readMessagesIds.length > 0) {
-        io.in([userId.toString(), otherUserId.toString()]).emit('read_messages', { chat_id: chatId, sender_id: readMessagesIds[0].sender_id, messages_ids: readMessagesIds.map(obj => obj.id) });
+    const readMessages = await messagesModel.readMessages(chatId, userId);
+    if (readMessages.length > 0) {
+        /// TODO dry
+        io.in([userId.toString()]).emit('read_messages', {
+            chat_id: chatId,
+            sender_id: readMessages[0].sender_id,
+            is_current_user: readMessages[0].sender_id == userId,
+            messages_ids: readMessages.map(obj => obj.id),
+        });
+        io.in([otherUserId.toString()]).emit('read_messages', {
+            chat_id: chatId,
+            sender_id: readMessages[0].sender_id,
+            is_current_user: readMessages[0].sender_id == otherUserId,
+            messages_ids: readMessages.map(obj => obj.id),
+        });
     }
 
     // send notification
     const user = await usersModel.getUserById(userId);
     const otherUser = await usersModel.getUserById(otherUserId);
-    sendNotification(otherUser.id, user.username, newMessage.message, { chat_id: chatId.toString(), type: 'new', ids: JSON.stringify([newMessage.id]) });
+    sendNotification(otherUser.id, user.username, newMessage.message, {
+        chat_id: chatId.toString(),
+        type: 'new',
+        ids: JSON.stringify([newMessage.id]),
+    });
 }

@@ -4,7 +4,7 @@ export const getMessagesByChatId = async (req, res) => {
     const userId = req.userId;
     const chatId = req.query.chatId?.trim();
     const limit = req.query.limit?.trim() ?? 1000;
-    const offset = req.query.offset.trim() ?? 0;
+    const cursor = req.query.cursor?.trim();
 
     // validataions
     if (!chatId) {
@@ -13,15 +13,15 @@ export const getMessagesByChatId = async (req, res) => {
         return res.status(400).json({ message: 'chatId must be int' });
     } else if (isNaN(limit)) {
         return res.status(400).json({ message: 'limit must be int' });
-    } else if (isNaN(offset)) {
+    } else if (cursor && isNaN(cursor)) {
         return res.status(400).json({ message: 'offset must be int' });
     }
 
     // get messages
-    const messages = await messagesModel.getAllMessagesByChatId(chatId, limit, offset);
+    const messages = await messagesModel.getAllMessagesByChatId(chatId, limit, cursor);
     messages.forEach(message => {
         message.is_current_user = message.sender_id === userId;
     });
     
-    res.status(200).json({ data: messages, limit: limit, offset: offset });
+    res.status(200).json({ data: messages, limit: limit, cursor: cursor });
 }
