@@ -8,7 +8,7 @@ export const onReadBeforeTime = async (io, data, userId) => {
     const chatId = data.chat_id;
     const readMessages = await messagesModel.readMessages(chatId, userId, data.time);
     if (readMessages.length > 0) {
-        const otherUserId = await chatsModel.getOtherUserId(userId, chatId);
+        const otherUserId = await chatsModel.getOtherUserIdByChatId(userId, chatId);
         // TODO dry
         io.in([userId.toString()]).emit('read_messages', {
             chat_id: chatId,
@@ -33,7 +33,7 @@ export const onReadAll = async (io, data, userId) => {
 export const onMessageToAi = async (io, data, userId) => {
     const message = data.message;
     if (!message) {
-        console.log('WSError: otherUserId or message is missing');
+        onError('Event: onMessageToAi, message is missing');
         return;
     }
 
@@ -57,7 +57,7 @@ export const onMessage = async (io, data, userId) => {
     const otherUserId = data.recipient_id;
     const message = data.message;
     if (!otherUserId || !message) {
-        console.log('WSError: otherUserId or message is missing');
+        onError('Event: onMessage, otherUserId or message is missing');
         return;
     }
 
@@ -107,4 +107,55 @@ export const onMessage = async (io, data, userId) => {
         type: 'new',
         ids: JSON.stringify([newMessage.id]),
     });
+}
+
+export const onDeleteMessage = async (io, data, userId) => {
+    const messageId = data.message_id;
+    if (isNaN(messageId)) {
+        onError('Event: onDeleteMessage, int message_id is missing');
+        return;
+    }
+    const messageToDelete = await messagesModel.getMessageById(messageId);
+    if (!messageToDelete || messageToDelete.sender_id != userId) return;
+
+    const chatId = messageToDelete.chat_id;
+    const otherUserId = await chatsModel.getOtherUserIdByChatId(userId, chatId);
+    const lastTwoMessages = await messagesModel.getAllMessagesByChatId(chatId, 2);
+
+    await messagesModel.deleteMessageById(messageToDelete.id);
+
+    const messageToSend = { ...messageToDelete };
+    messageToSend['message'] = '_deleted_';
+    if (messageToDelete.id != lastTwoMessages[0].id) {
+        messageToSend['is_current_user'] = messageToSend.sender_id == userId;
+        io.in([userId.toString()]).emit('deleted_message', {
+            chat_id: chatId,
+            message: messageToSend,
+        });
+        messageToSend['is_current_user'] = messageToSend.sender_id == otherUserId;
+        io.in([otherUserId.toString()]).emit('deleted_message', {
+            chat_id: chatId,
+            message: messageToSend,
+        });
+    } else {
+        const newLastMessage = lastTwoMessages[1];
+        newLastMessage['is_current_user'] = newLastMessage.sender_id == userId;
+        messageToSend['is_current_user'] = messageToSend.sender_id == userId;
+        io.in([userId.toString()]).emit('deleted_message', {
+            chat_id: chatId,
+            message: messageToSend,
+            new_last_message: newLastMessage,
+        });
+        newLastMessage['is_current_user'] = newLastMessage.sender_id == otherUserId;
+        messageToSend['is_current_user'] = messageToSend.sender_id == otherUserId;
+        io.in([otherUserId.toString()]).emit('deleted_message', {
+            chat_id: chatId,
+            message: messageToSend,
+            new_last_message: newLastMessage,
+        });
+    }
+}
+
+const onError = (message) => {
+    console.log(`WSError ${message}`);
 }

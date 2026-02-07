@@ -5,6 +5,10 @@ export const createNewMessage = async (chatId, senderId, message) => {
     return result.rows[0].id;
 }
 
+export const deleteMessageById = async (messageId) => {
+    await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
+}
+
 export const getMessageById = async (id) => {
     const result = await pool.query('SELECT * FROM messages WHERE id = $1', [id]);
     if (result.rows.length === 0) {
