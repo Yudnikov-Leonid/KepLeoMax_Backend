@@ -103,7 +103,7 @@ export const getPosts = async (req, res) => {
     }
 
     // get posts
-    let posts = await postsModel.getPostsWithLimit(limit, offset, beforeTime);
+    let posts = await postsModel.getPosts(limit, offset, beforeTime);
     // set users
     const usersMap = new Map();
     for (let i = 0; i < posts.length; i++) {

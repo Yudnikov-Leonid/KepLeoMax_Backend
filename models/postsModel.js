@@ -24,7 +24,7 @@ export const updatePost = async (postId, content, images) => {
    return result.rows[0];
 }
 
-export const getPostsWithLimit = async (limit, offset, beforeTime) => {
+export const getPosts = async (limit, offset, beforeTime) => {
     const result = await pool.query('SELECT * FROM posts WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3', [beforeTime ?? Date.now(), limit, offset]);
     return result.rows;
 }

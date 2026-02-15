@@ -40,21 +40,21 @@ export const searchUsers = async (req, res) => {
     const userId = req.userId;
     const search = req.query.search;
     const limit = req.query.limit?.trim() ?? 10;
-    const offset = req.query.offset?.trim() ?? 0;
+    const cursor = req.query.cursor?.trim() ?? 0;
 
     // validations
     if (search === undefined) {
         return res.status(400).json({ message: 'search param is required' });
     } else if (isNaN(limit)) {
         return res.status(400).json({ message: 'limit must be int' });
-    } else if (isNaN(offset)) {
-        return res.status(400).json({ message: 'offset must be int' });
+    } else if (cursor && isNaN(cursor)) {
+        return res.status(400).json({ message: 'cursor must be int' });
     }
 
     // get users
-    const users = (await usersModel.searchUsers(search, userId, limit, offset)).map(user => convertUserToSend(user, req));
+    const users = (await usersModel.searchUsers(search, userId, limit, cursor)).map(user => convertUserToSend(user, req));
 
-    res.status(200).json({ data: users, limit: limit, offset: offset });
+    res.status(200).json({ data: users, limit: limit, cursor: cursor });
 }
 
 export const addFCMToken = async (req, res) => {

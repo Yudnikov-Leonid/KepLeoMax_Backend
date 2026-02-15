@@ -19,7 +19,7 @@ export const getMessageById = async (id) => {
 }
 
 export const getAllMessagesByChatId = async (chatId, limit, cursor) => {
-    const result = await pool.query('SELECT * FROM messages WHERE chat_id = $1 AND id < $2 ORDER BY created_at DESC LIMIT $3', [chatId, cursor ?? Math.pow(2, 31) - 1, limit]); // TODO
+    const result = await pool.query('SELECT * FROM messages WHERE chat_id = $1 AND id < $2 ORDER BY created_at DESC LIMIT $3', [chatId, cursor ?? Math.pow(2, 31) - 1, limit]);
     return result.rows;
 }
 
