@@ -1,12 +1,13 @@
 import pool from "../db.js";
 
-// create, update
+// create
 const usernames = ['Cool username', 'Amazing username', 'Wonderful username', 'The best username'];
 export const createUser = async (email, hashedPassword) => {
     const result = await pool.query("INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id", [usernames[Math.floor(Math.random() * usernames.length)], email, hashedPassword]);
     return result.rows[0].id;
 }
 
+// update
 export const updateUser = async (id, username, profileImage, updateImage) => {
     const result = await pool.query(`UPDATE users SET username = $1${!updateImage ? '' : ', profile_image = $3'} WHERE id = $2 RETURNING *`, !updateImage ? [username, id] : [username, id, profileImage]);
     return result.rows[0];
@@ -15,37 +16,30 @@ export const updateUser = async (id, username, profileImage, updateImage) => {
 // read
 export const getUserByEmail = async (email) => {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) {
-        return null;
-    } else {
-        return result.rows[0];
-    }
+    return result.rows[0];
 }
 
+// TODO this is bullshit and not working in other methods
 export const getUserById = async (id) => {
-    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
-        return null;
-    } else {
-        return result.rows[0];
-    }
+    const result = await pool.query('SELECT * FROM users LEFT JOIN onlines ON users.id = onlines.user_id WHERE users.id = $1', [id]);
+    return result.rows[0];
 }
 
+// TODO here too
 export const searchUsers = async (search, currentUserId, limit, cursor) => {
-    const result = await pool.query('SELECT * FROM users WHERE (lower(username) LIKE lower($1)) AND id != $2 AND id > $3 ORDER BY id ASC LIMIT $4', [`%${search}%`, currentUserId, cursor ?? Math.pow(2, 31) - 1, limit]);
+    const result = await pool.query(
+        'SELECT * FROM users LEFT JOIN onlines ON users.id = onlines.user_id WHERE (lower(users.username) LIKE lower($1)) AND users.id != $2 AND users.id > $3 ORDER BY id ASC LIMIT $4',
+        [`%${search}%`, currentUserId, cursor ?? Math.pow(2, 31) - 1, limit],
+    );
     return result.rows;
 }
 
 export const getUserByRefreshToken = async (refreshToken) => {
     const result = await pool.query('SELECT * FROM users WHERE id = (SELECT user_id FROM refresh_tokens WHERE token = $1 LIMIT 1 OFFSET 0)', [refreshToken]);
-    if (result.rows.length === 0) {
-        return null;
-    } else {
-        return result.rows[0];
-    }
+    return result.rows[0];
 }
 
-// check
+// validation
 export const haveDuplicateWithEmail = async (email) => {
     const duplicates = await pool.query('SELECT * FROM users WHERE email = $1 LIMIT 1 OFFSET 0', [email]);
     return duplicates.rows.length !== 0;

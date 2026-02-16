@@ -43,8 +43,10 @@ app.post('/setup', async (req, res) => {
     await pool.query('CREATE DATABASE KLM_db;');
     await pool.query('CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50) NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, profile_image VARCHAR(32))');
     await pool.query('CREATE TABLE profiles (id SERIAL PRIMARY KEY, user_id INT UNIQUE NOT NULL, description VARCHAR(200) NOT NULL)');
+    await pool.query('CREATE TABLE onlines (user_id INT PRIMARY KEY, online BOOLEAN NOT NULL, last_activity_time BIGINT NOT NULL)');
+    
     await pool.query('CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT NOT NULL, content VARCHAR(4000) NOT NULL, images VARCHAR(32)[] NOT NULL, users_who_liked_ids INT[], created_at BIGINT NOT NULL, edited_at BIGINT)');
-
+    
     await pool.query('CREATE TABLE chats (id SERIAL PRIMARY KEY, user_id INT NOT NULL, chat_id SERIAL NOT NULL)');
     await pool.query('CREATE TABLE messages (id SERIAL PRIMARY KEY, chat_id INT NOT NULL, sender_id INT NOT NULL, message VARCHAR(4000) NOT NULL, is_read BOOLEAN DEFAULT FALSE NOT NULL, created_at BIGINT NOT NULL, edited_at BIGINT)');
 

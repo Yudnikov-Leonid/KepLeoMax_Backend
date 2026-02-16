@@ -1,4 +1,4 @@
-import { onDeleteMessage, onMessage, onMessageToAi, onReadAll, onReadBeforeTime } from '../services/websocketService.js';
+import { changeOnlineStatus as updateOnlineStatus, onDeleteMessage, onMessage, onMessageToAi, onReadAll, onReadBeforeTime } from '../services/websocketService.js';
 
 const webSocket = (io, socket) => {
     const userId = socket.userId;
@@ -10,6 +10,7 @@ const webSocket = (io, socket) => {
     }
 
     console.log(`user ${socket.id} with id ${userId} connected`);
+    updateOnlineStatus(io, true, userId);
 
     socket.join(userId.toString());
 
@@ -34,9 +35,23 @@ const webSocket = (io, socket) => {
         onReadBeforeTime(io, data, userId)
     );
 
-    socket.on('disconnect', () =>
-        console.log(`user ${socket.id} with id ${userId} disconnected`)
-    );
+    socket.on('subscribe_on_online_status_updates', async (data) => {
+        const ids = data.users_ids;
+        if (!Array.isArray(ids)) return;
+
+        for (const id in ids) {
+            socket.join(`${id}_online_status`);
+        }
+    });
+
+    socket.on('activity_detected', async (data) => {
+        updateOnlineStatus(io, true, userId);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`user ${socket.id} with id ${userId} disconnected`);
+        updateOnlineStatus(io, false, userId);
+    });
 }
 
 export default webSocket;

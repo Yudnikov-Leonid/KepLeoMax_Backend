@@ -1,9 +1,22 @@
 import * as chatsModel from '../models/chatsModel.js';
 import * as messagesModel from '../models/messagesModel.js';
 import * as usersModel from '../models/usersModel.js';
+import * as onlinesModel from '../models/onlinesModel.js';
 import { sendNotification } from '../services/notificationService.js';
 import { ask } from './aiService.js';
 
+/// online status
+export const changeOnlineStatus = async (io, isOnline, userId) => {
+    const result = await onlinesModel.updateOnlineStatus(userId, isOnline);
+
+    io.in(`${userId}_online_status`).emit('online_status_update', {
+        user_id: userId,
+        is_online: result.online,
+        last_activity_time: result.last_activity_time,
+    });
+}
+
+/// messages
 export const onReadBeforeTime = async (io, data, userId) => {
     const chatId = data.chat_id;
     const readMessages = await messagesModel.readMessages(chatId, userId, data.time);

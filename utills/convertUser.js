@@ -3,7 +3,16 @@ const convertUserToSend = (user, req) => {
 
     const isCurrent = req.userId === user.id;
 
-    return { id: user.id, username: user.username, profile_image: user.profile_image, is_current: isCurrent };
+    // console.log(`convertUser: ${JSON.stringify(user)}`);
+
+    return {
+        id: user.id,
+        username: user.username,
+        profile_image: user.profile_image,
+        is_current: isCurrent,
+        is_online: user.online,
+        last_activity_time: user.last_activity_time,
+    };
 };
 
 export default convertUserToSend;

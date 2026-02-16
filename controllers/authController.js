@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as usersModel from '../models/usersModel.js'
 import * as profilesModel from '../models/profilesModel.js';
+import * as onlinesModel from '../models/onlinesModel.js';
 import convertUserToSend from '../utills/convertUser.js';
 import emailValidator from 'email-validator';
 
@@ -39,7 +40,7 @@ export const createNewUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = await usersModel.createUser(email, hashedPassword);
     await profilesModel.createUserProfile(userId);
-
+    await onlinesModel.addUser(userId);
     return res.status(201).json({ success: `New user with email ${email} created` });
 }
 
