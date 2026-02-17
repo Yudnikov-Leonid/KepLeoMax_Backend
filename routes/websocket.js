@@ -1,4 +1,4 @@
-import { changeOnlineStatus as updateOnlineStatus, onDeleteMessage, onMessage, onMessageToAi, onReadAll, onReadBeforeTime } from '../services/websocketService.js';
+import { changeOnlineStatus as updateOnlineStatus, onDeleteMessage, onMessage, onMessageToAi, onReadAll, onReadBeforeTime, typingActivity } from '../services/websocketService.js';
 
 const webSocket = (io, socket) => {
     const userId = socket.userId;
@@ -37,15 +37,23 @@ const webSocket = (io, socket) => {
 
     socket.on('subscribe_on_online_status_updates', async (data) => {
         const ids = data.users_ids;
-        if (!Array.isArray(ids)) return;
+        console.log(`subscribe_on_online_status_updates, userId: ${userId}, ids: ${ids}`);
 
-        for (const id in ids) {
-            socket.join(`${id}_online_status`);
+        if (isNaN(ids) && Array.isArray(ids)) {
+            for (const id in ids) {
+                socket.join(`${id}_online_status`);
+            }
+        } else if (!isNaN(ids)) {
+            socket.join(`${ids}_online_status`);
         }
     });
 
     socket.on('activity_detected', async (data) => {
         updateOnlineStatus(io, true, userId);
+    });
+
+    socket.on('typing_activity_detected', async (data) => {
+        typingActivity(io, data, userId);
     });
 
     socket.on('disconnect', () => {

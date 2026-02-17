@@ -29,11 +29,11 @@ export const getChatById = async (chatId) => {
 // chat must contain only 2 users for this to works correctly
 export const getOtherUserIdByChatId = async (userId, chatId) => {
     const result = await pool.query('SELECT * FROM chats WHERE chat_id = $1 AND user_id != $2', [chatId, userId]);
-    if (result.rows.length === 0) {
+    if (result.rowCount > 1) {
+        // chat doesn't contain provided userId
         return null;
-    } else {
-        return result.rows[0].user_id;
     }
+    return result.rows[0]?.user_id;
 }
 
 // chat must contain only 2 users for this to works correctly

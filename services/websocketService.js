@@ -8,6 +8,7 @@ import { ask } from './aiService.js';
 /// online status
 export const changeOnlineStatus = async (io, isOnline, userId) => {
     const result = await onlinesModel.updateOnlineStatus(userId, isOnline);
+    console.log('update_online_status userId: ' + userId);
 
     io.in(`${userId}_online_status`).emit('online_status_update', {
         user_id: userId,
@@ -16,8 +17,20 @@ export const changeOnlineStatus = async (io, isOnline, userId) => {
     });
 }
 
+export const typingActivity = async (io, data, userId) => {
+    const chatId = data.chat_id;
+    if (isNaN(chatId)) return;
+    const otherUserId = await chatsModel.getOtherUserIdByChatId(userId, chatId);
+    if (!otherUserId) return;
+
+    io.in(otherUserId.toString()).emit('typing_activity', {
+        chat_id: chatId,
+    });
+}
+
 /// messages
 export const onReadBeforeTime = async (io, data, userId) => {
+    // TODO validate
     const chatId = data.chat_id;
     const readMessages = await messagesModel.readMessages(chatId, userId, data.time);
     if (readMessages.length > 0) {
